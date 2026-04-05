@@ -1,0 +1,25 @@
+# Node dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Build outputs
+build/
+client/build/
+server/build/
+coverage/
+client/coverage/
+
+# Env files
+.env
+.env.local
+.env.*.local
+client/.env*
+server/.env*
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
