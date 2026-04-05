@@ -1,0 +1,69 @@
+{
+  "income": [
+    {
+      "id": 2,
+      "transactionName": "Freelance Project",
+      "amount": 1200,
+      "date": "2024-06-15"
+    },
+    {
+      "transactionName": "hustel",
+      "amount": 100000,
+      "id": 3
+    },
+    {
+      "transactionName": "hustle2",
+      "amount": 150000,
+      "id": 4
+    },
+    {
+      "transactionName": "hustle",
+      "amount": 35000,
+      "id": 5
+    },
+    {
+      "transactionName": "hustle2",
+      "amount": 450000,
+      "id": 6
+    },
+    {
+      "transactionName": "THR",
+      "amount": 10000000,
+      "id": 7
+    },
+    {
+      "transactionName": "BONUS",
+      "amount": 10000000,
+      "id": 8
+    }
+  ],
+  "expense": [
+    {
+      "id": 1,
+      "transactionName": "Rent",
+      "amount": 1500,
+      "date": "2024-06-01"
+    },
+    {
+      "id": 2,
+      "transactionName": "Groceries",
+      "amount": 300,
+      "date": "2024-06-10"
+    },
+    {
+      "transactionName": "TOKEN",
+      "amount": 120000,
+      "id": 3
+    },
+    {
+      "transactionName": "IWB",
+      "amount": 10000,
+      "id": 5
+    },
+    {
+      "transactionName": "Kontrakan",
+      "amount": 3000000,
+      "id": 6
+    }
+  ]
+}
