@@ -60,8 +60,6 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push' || (github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
-    environment:
-      name: development
     steps:
       - name: Test SSH connectivity only
         uses: appleboy/ssh-action@v1.2.2
