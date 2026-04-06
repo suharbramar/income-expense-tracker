@@ -12,6 +12,7 @@ env:
   APP_DIR: /var/www/income-expense
   DATA_DIR: /var/www/income-expense/data
   SSH_PORT: 22
+  CI: false
 
 jobs:
   build:
@@ -38,8 +39,6 @@ jobs:
         working-directory: server
 
       - name: Run tests (client)
-        env:
-          CI: true
         run: npm test -- --watch=false --passWithNoTests
         working-directory: client
 
