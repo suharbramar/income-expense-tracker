@@ -58,7 +58,7 @@ jobs:
             server/data.json
 
   deploy:
-    needs: ci
+    needs: build
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
     runs-on: ubuntu-latest
     environment:
