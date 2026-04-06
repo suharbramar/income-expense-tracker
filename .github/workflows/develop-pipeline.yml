@@ -14,7 +14,7 @@ env:
   SSH_PORT: 22
 
 jobs:
-  ci:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -63,7 +63,6 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: development
-      url: http://${{ secrets.DO_HOST }}:3000
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -120,4 +119,3 @@ jobs:
 
             # clean temp
             rm -rf "$APP_DIR/release"
-
