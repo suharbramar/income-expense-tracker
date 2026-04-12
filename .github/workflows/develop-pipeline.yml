@@ -8,11 +8,8 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: 18
-  APP_DIR: /var/www/income-expense
-  DATA_DIR: /var/www/income-expense/data
+  NODE_VERSION: 20
   SSH_PORT: 22
-  CI: false
 
 jobs:
   build:
@@ -26,42 +23,50 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: |
-            client/package-lock.json
-            server/package-lock.json
+          cache-dependency-path: client/package-lock.json
 
       - name: Install dependencies (client)
         run: npm ci
         working-directory: client
 
-      - name: Install dependencies (server)
-        run: npm ci
-        working-directory: server
-
       - name: Run tests (client)
-        run: npm test -- --watch=false --passWithNoTests
+        run: CI=true npm test -- --watch=false --passWithNoTests
         working-directory: client
 
       - name: Build client
         run: npm run build
         working-directory: client
 
-      - name: Upload build artifact
+      - name: Upload client build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: income-expense-build
-          path: |
-            client/build
-            server/package.json
-            server/package-lock.json
-            server/data.json
+          name: react-build
+          path: client/build
+          if-no-files-found: error
+          retention-days: 3
 
   deploy:
     needs: build
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push' || (github.event_name == 'workflow_dispatch')
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/develop') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - name: Test SSH connectivity only
+      - name: Download client build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: react-build
+          path: build
+
+      - name: Copy client build files to VPS (temporary folder)
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          port: ${{ secrets.DO_PORT != '' && secrets.DO_PORT || env.SSH_PORT }}
+          source: "build/*"
+          target: "/tmp/income-expense-tracker-build"
+
+      - name: Publish client and reload Nginx
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.DO_HOST }}
@@ -70,6 +75,11 @@ jobs:
           port: ${{ secrets.DO_PORT != '' && secrets.DO_PORT || env.SSH_PORT }}
           script: |
             set -euo pipefail
-            echo "SSH connection succeeded on $(hostname)"
-            echo "Server time: $(date -Iseconds)"
-            echo "Working directory: $(pwd)"
+
+            sudo mkdir -p "${{ vars.DEPLOY_PATH }}"
+            sudo rm -rf "${{ vars.DEPLOY_PATH }}"/*
+            sudo cp -r /tmp/income-expense-tracker-build/build/* "${{ vars.DEPLOY_PATH }}/"
+
+            rm -rf /tmp/income-expense-tracker-build
+            sudo nginx -t
+            sudo systemctl reload nginx
