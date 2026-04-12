@@ -82,5 +82,3 @@ jobs:
             sudo cp -r /tmp/income-expense-tracker-build/build/* "${{ vars.DEPLOY_PATH }}/"
 
             rm -rf /tmp/income-expense-tracker-build
-            sudo nginx -t
-            sudo systemctl reload nginx
