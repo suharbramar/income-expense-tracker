@@ -1,0 +1,45 @@
+name: Mock Data Sync
+
+on:
+  workflow_dispatch:
+
+env:
+  SSH_PORT: 22
+
+jobs:
+  sync-mock-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Copy mock data to VPS (temporary folder)
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          port: ${{ secrets.DO_PORT != '' && secrets.DO_PORT || env.SSH_PORT }}
+          source: "server/data.json"
+          target: "/tmp/income-expense-tracker-mock-data"
+
+      - name: Publish mock data and restart service
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          port: ${{ secrets.DO_PORT != '' && secrets.DO_PORT || env.SSH_PORT }}
+          script: |
+            set -euo pipefail
+
+            DATA_DIR="/var/www/income-expense-tracker/data"
+            DATA_FILE="${DATA_DIR}/db.json"
+
+            sudo mkdir -p "$DATA_DIR"
+            sudo cp /tmp/income-expense-tracker-mock-data/server/data.json "$DATA_FILE"
+            rm -rf /tmp/income-expense-tracker-mock-data
+
+            sudo systemctl restart income-expense-mock
+            sudo systemctl is-active --quiet income-expense-mock
+            curl -fsS http://127.0.0.1:3001/income >/dev/null
