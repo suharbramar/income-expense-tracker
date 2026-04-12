@@ -76,4 +76,11 @@ jobs:
           port: ${{ secrets.DO_PORT != '' && secrets.DO_PORT || env.SSH_PORT }}
           script: |
             set -euo pipefail
-            sudo mkdir -p "${{ vars.DEPLOY_PATH }}"
+
+            mkdir -p "${{ vars.DEPLOY_PATH }}"
+            rm -rf "${{ vars.DEPLOY_PATH }}"/*
+            cp -r /tmp/income-expense-tracker-build/build/* "${{ vars.DEPLOY_PATH }}/"
+
+            rm -rf /tmp/income-expense-tracker-build
+            sudo -n nginx -t
+            sudo -n systemctl reload nginx

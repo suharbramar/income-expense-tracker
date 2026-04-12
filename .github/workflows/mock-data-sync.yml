@@ -36,10 +36,10 @@ jobs:
             DATA_DIR="/var/www/income-expense-tracker/data"
             DATA_FILE="${DATA_DIR}/db.json"
 
-            sudo mkdir -p "$DATA_DIR"
-            sudo cp /tmp/income-expense-tracker-mock-data/server/data.json "$DATA_FILE"
+            mkdir -p "$DATA_DIR"
+            cp /tmp/income-expense-tracker-mock-data/server/data.json "$DATA_FILE"
             rm -rf /tmp/income-expense-tracker-mock-data
 
-            sudo systemctl restart income-expense-mock
-            sudo systemctl is-active --quiet income-expense-mock
+            sudo -n systemctl restart income-expense-mock
+            sudo -n systemctl is-active --quiet income-expense-mock
             curl -fsS http://127.0.0.1:3001/income >/dev/null
