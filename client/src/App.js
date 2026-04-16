@@ -10,7 +10,7 @@ import {
 import axios from "axios";
 import { useState, useEffect } from "react";
 
-const URL = "http://localhost:3001";
+const URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
 function App() {
   const [incomeData, setIncomeData] = useState([]);

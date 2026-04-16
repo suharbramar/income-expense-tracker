@@ -10,7 +10,6 @@ on:
 env:
   NODE_VERSION: 20
   SSH_PORT: 22
-  CI: false
 
 jobs:
   build:
@@ -37,6 +36,8 @@ jobs:
       - name: Build client
         run: npm run build
         working-directory: client
+        env:
+          REACT_APP_API_URL: ${{ vars.DEVELOP_API_URL }}
 
       - name: Upload client build artifact
         uses: actions/upload-artifact@v4
