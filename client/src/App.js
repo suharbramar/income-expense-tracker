@@ -19,6 +19,7 @@ function App() {
   const [deleting, setDeleting] = useState(null);
   const [selectedIncomeId, setSelectedIncomeId] = useState(null);
   const [selectedExpenseId, setSelectedExpenseId] = useState(null);
+  const [updating, setUpdating] = useState(null);
 
   useEffect(() => {
     getIncome();
@@ -103,6 +104,33 @@ function App() {
     setSelectedExpenseId(selectedExpenseId === id ? null : id);
   };
 
+  const updateTransaction = async (id, type, payload) => {
+    setUpdating(id);
+    try {
+      await axios.put(`${URL}/${type}/${id}`, payload);
+
+      let typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+      alert(`${typeLabel} updated successfully!`);
+
+      if (type === "income") {
+        getIncome();
+        setSelectedIncomeId(null);
+      } else {
+        getExpense();
+        setSelectedExpenseId(null);
+      }
+
+      setUpdating(null);
+    } catch (error) {
+      alert(`Error updating the ${type} transaction. Please try again later.`);
+      console.error(
+        `There was an error updating the ${type} transaction!`,
+        error,
+      );
+      setUpdating(null);
+    }
+  };
+
   return (
     <div className="App">
       <Header name="Income and Expense Tracker" />
@@ -115,6 +143,8 @@ function App() {
           deleting={deleting}
           onSelectRow={handleSelectIncome}
           selectedId={selectedIncomeId}
+          updateTransaction={updateTransaction}
+          updating={updating}
         />
         <Expense
           expenseData={expenseData}
@@ -122,6 +152,8 @@ function App() {
           deleting={deleting}
           onSelectRow={handleSelectExpense}
           selectedId={selectedExpenseId}
+          updateTransaction={updateTransaction}
+          updating={updating}
         />
       </div>
     </div>
