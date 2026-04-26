@@ -1,13 +1,8 @@
 {
   "income": [
     {
-      "id": 2,
-      "transactionName": "Freelance Project",
-      "amount": 1200
-    },
-    {
       "transactionName": "hustel",
-      "amount": 100000,
+      "amount": 150000,
       "id": 3
     },
     {

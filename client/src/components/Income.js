@@ -4,9 +4,12 @@ const Income = ({
   deleting,
   selectedId,
   onSelectRow,
-  updateTransaction,
+  openEditTransaction,
   updating,
 }) => {
+  const selectedIncome = incomeData.find((item) => item.id === selectedId);
+  const actionDisabled = !selectedId || deleting !== null || updating !== null;
+
   return (
     <div className="income-list">
       <div className="income-heading">
@@ -17,14 +20,11 @@ const Income = ({
         <button
           className="update-btn"
           onClick={() => {
-            if (selectedId) {
-              const selected = incomeData.find(
-                (item) => item.id === selectedId,
-              );
-              updateTransaction(selectedId, "income", selected);
+            if (selectedIncome) {
+              openEditTransaction(selectedIncome, "income");
             }
           }}
-          disabled={!selectedId || updating === selectedId}>
+          disabled={actionDisabled}>
           {updating === selectedId ? "Updating..." : "Update"}
         </button>
         <button
@@ -34,7 +34,7 @@ const Income = ({
               deleteTransaction(selectedId, "income");
             }
           }}
-          disabled={!selectedId || deleting === selectedId}>
+          disabled={actionDisabled}>
           {deleting === selectedId ? "Deleting..." : "Delete"}
         </button>
       </div>
@@ -55,6 +55,7 @@ const Income = ({
               <td className="select-col">
                 <input
                   type="checkbox"
+                  aria-label={`Select income ${item.transactionName}`}
                   checked={selectedId === item.id}
                   onChange={() => onSelectRow(item.id)}
                 />

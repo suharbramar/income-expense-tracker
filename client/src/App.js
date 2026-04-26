@@ -5,12 +5,17 @@ import {
   ItemHeader,
   Income,
   Expense,
+  EditTransactionModal,
 } from "./components/Index";
 
 import axios from "axios";
 import { useState, useEffect } from "react";
 
 const URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
+
+const isSingleRecordId = (id) => {
+  return !Array.isArray(id) && id !== null && id !== undefined && id !== "";
+};
 
 function App() {
   const [incomeData, setIncomeData] = useState([]);
@@ -20,6 +25,7 @@ function App() {
   const [selectedIncomeId, setSelectedIncomeId] = useState(null);
   const [selectedExpenseId, setSelectedExpenseId] = useState(null);
   const [updating, setUpdating] = useState(null);
+  const [editingTransaction, setEditingTransaction] = useState(null);
 
   useEffect(() => {
     getIncome();
@@ -75,23 +81,30 @@ function App() {
   };
 
   const deleteTransaction = async (id, type) => {
+    if (!isSingleRecordId(id)) {
+      alert("Please select a single transaction to delete.");
+      return;
+    }
+
     setDeleting(id);
     try {
       await axios.delete(`${URL}/${type}/${id}`);
       if (type === "income") {
-        getIncome();
+        await getIncome();
+        setSelectedIncomeId(null);
       } else {
-        getExpense();
+        await getExpense();
+        setSelectedExpenseId(null);
       }
 
       alert("Transaction deleted successfully!");
-      setDeleting(null);
     } catch (error) {
       alert(`Error deleting the ${type} transaction. Please try again later.`);
       console.error(
         `There was an error deleting the ${type} transaction!`,
         error,
       );
+    } finally {
       setDeleting(null);
     }
   };
@@ -99,35 +112,77 @@ function App() {
   // Toggle selection of income or expense item
   const handleSelectIncome = (id) => {
     setSelectedIncomeId(selectedIncomeId === id ? null : id);
+    setSelectedExpenseId(null);
   };
 
   const handleSelectExpense = (id) => {
     setSelectedExpenseId(selectedExpenseId === id ? null : id);
+    setSelectedIncomeId(null);
+  };
+
+  const openEditTransaction = (record, type) => {
+    if (!record || !isSingleRecordId(record.id)) {
+      alert("Please select a single transaction to update.");
+      return;
+    }
+
+    setEditingTransaction({
+      ...record,
+      type,
+    });
+  };
+
+  const closeEditTransaction = () => {
+    if (updating !== null) {
+      return;
+    }
+
+    setEditingTransaction(null);
   };
 
   const updateTransaction = async (id, type, payload) => {
+    if (!isSingleRecordId(id)) {
+      alert("Please select a single transaction to update.");
+      return;
+    }
+
+    const transactionName = String(payload.transactionName || "").trim();
+    const amount = Number(payload.amount);
+
+    if (!transactionName || !Number.isFinite(amount) || amount <= 0) {
+      alert("Please enter a transaction name and a positive amount.");
+      return;
+    }
+
     setUpdating(id);
     try {
-      await axios.put(`${URL}/${type}/${id}`, payload);
+      const { type: _ignoredType, ...transactionPayload } = payload;
+
+      await axios.put(`${URL}/${type}/${id}`, {
+        ...transactionPayload,
+        transactionName,
+        amount,
+      });
 
       let typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
       alert(`${typeLabel} updated successfully!`);
 
       if (type === "income") {
-        getIncome();
+        await getIncome();
         setSelectedIncomeId(null);
       } else {
-        getExpense();
+        await getExpense();
         setSelectedExpenseId(null);
       }
 
-      setUpdating(null);
+      setEditingTransaction(null);
     } catch (error) {
       alert(`Error updating the ${type} transaction. Please try again later.`);
       console.error(
         `There was an error updating the ${type} transaction!`,
         error,
       );
+    } finally {
       setUpdating(null);
     }
   };
@@ -144,7 +199,7 @@ function App() {
           deleting={deleting}
           onSelectRow={handleSelectIncome}
           selectedId={selectedIncomeId}
-          updateTransaction={updateTransaction}
+          openEditTransaction={openEditTransaction}
           updating={updating}
         />
         <Expense
@@ -153,10 +208,16 @@ function App() {
           deleting={deleting}
           onSelectRow={handleSelectExpense}
           selectedId={selectedExpenseId}
-          updateTransaction={updateTransaction}
+          openEditTransaction={openEditTransaction}
           updating={updating}
         />
       </div>
+      <EditTransactionModal
+        transaction={editingTransaction}
+        updating={updating}
+        onCancel={closeEditTransaction}
+        onSave={updateTransaction}
+      />
     </div>
   );
 }
