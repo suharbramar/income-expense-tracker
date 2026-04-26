@@ -257,3 +257,44 @@ button:hover {
   background-color: #cbd5e1;
   cursor: not-allowed;
 }
+
+/* ========== EXPENSE TABLE STYLES ========== */
+
+.expense-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  background-color: #fef2f2;
+}
+
+.expense-table thead {
+  background-color: #dc2626;
+  color: white;
+  font-weight: bold;
+}
+
+.expense-table th,
+.expense-table td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #fee2e2;
+}
+
+.expense-table tbody tr {
+  transition: background-color 0.2s;
+}
+
+.expense-table tbody tr.selected {
+  background-color: #fee2e2;
+  font-weight: 500;
+}
+
+.expense-table tbody tr:hover {
+  background-color: #fef5f5;
+}
+
+.expense-table input[type="checkbox"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
