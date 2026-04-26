@@ -175,3 +175,85 @@ button:hover {
     gap: 20px;
   }
 }
+
+/* ========== INCOME TABLE STYLES ========== */
+
+.income-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  background-color: #f9fafb;
+}
+
+.income-table thead {
+  background-color: #10b981;
+  color: white;
+  font-weight: bold;
+}
+
+.income-table th,
+.income-table td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #e5e7eb;
+}
+
+.income-table tbody tr {
+  transition: background-color 0.2s;
+}
+
+.income-table tbody tr.selected {
+  background-color: #d1fae5;
+  font-weight: 500;
+}
+
+.income-table tbody tr:hover {
+  background-color: #f0fdf4;
+}
+
+.income-table input[type="checkbox"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+.select-col {
+  width: 80px;
+  text-align: center;
+}
+
+.item-col {
+  width: auto;
+}
+
+.amount-col {
+  width: 120px;
+  text-align: right;
+  color: #059669;
+  font-weight: bold;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.update-btn {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.update-btn:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.update-btn:disabled {
+  background-color: #cbd5e1;
+  cursor: not-allowed;
+}
