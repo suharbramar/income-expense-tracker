@@ -17,6 +17,8 @@ function App() {
   const [expenseData, setExpenseData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(null);
+  const [selectedIncomeId, setSelectedIncomeId] = useState(null);
+  const [selectedExpenseId, setSelectedExpenseId] = useState(null);
 
   useEffect(() => {
     getIncome();
@@ -92,6 +94,15 @@ function App() {
     }
   };
 
+  // Toggle selection of income or expense item
+  const handleSelectIncome = (id) => {
+    setSelectedIncomeId(selectedIncomeId === id ? null : id);
+  };
+
+  const handleSelectExpense = (id) => {
+    setSelectedExpenseId(selectedExpenseId === id ? null : id);
+  };
+
   return (
     <div className="App">
       <Header name="Income and Expense Tracker" />
@@ -102,11 +113,15 @@ function App() {
           incomeData={incomeData}
           deleteTransaction={deleteTransaction}
           deleting={deleting}
+          onSelectRow={handleSelectIncome}
+          selectedId={selectedIncomeId}
         />
         <Expense
           expenseData={expenseData}
           deleteTransaction={deleteTransaction}
           deleting={deleting}
+          onSelectRow={handleSelectExpense}
+          selectedId={selectedExpenseId}
         />
       </div>
     </div>
