@@ -29,6 +29,7 @@ function App() {
   const getIncome = async () => {
     try {
       const response = await axios.get(`${URL}/income`);
+      console.log(response.data);
       setIncomeData(response.data);
     } catch (error) {
       alert("Error fetching income data. Please try again later.");
