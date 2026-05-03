@@ -4,9 +4,11 @@ const Expense = ({
   deleting,
   selectedId,
   onSelectRow,
-  updateTransaction,
+  openEditTransaction,
   updating,
 }) => {
+  const selectedExpense = expenseData.find((item) => item.id === selectedId);
+  const actionDisabled = !selectedId || deleting !== null || updating !== null;
   return (
     <div className="expense-list">
       <div className="expense-heading">
@@ -17,15 +19,12 @@ const Expense = ({
         <button
           className="update-btn"
           onClick={() => {
-            if (selectedId) {
-              const selected = expenseData.find(
-                (item) => item.id === selectedId,
-              );
-              updateTransaction(selectedId, "expense", selected);
+            if (selectedExpense) {
+              openEditTransaction(selectedExpense, "expense");
             }
           }}
-          disabled={!selectedId || updating === selectedId}>
-          {updating === selectedId ? "Updating..." : "Update"}
+          disabled={actionDisabled}>
+          {updating === selectedId ? "Edit" : "Update"}
         </button>
         <button
           className="delete-btn"
@@ -34,8 +33,8 @@ const Expense = ({
               deleteTransaction(selectedId, "expense");
             }
           }}
-          disabled={!selectedId || deleting === selectedId}>
-          {deleting === selectedId ? "Deleting..." : "Delete"}
+          disabled={actionDisabled}>
+          delete
         </button>
       </div>
 
@@ -55,7 +54,7 @@ const Expense = ({
               className={selectedId === item.id ? "selected" : ""}>
               <td className="select-col">
                 <input
-                  type="checkbox"
+                  type="radio"
                   checked={selectedId === item.id}
                   onChange={() => onSelectRow(item.id)}
                 />

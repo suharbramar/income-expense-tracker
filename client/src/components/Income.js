@@ -2,11 +2,14 @@ const Income = ({
   incomeData,
   deleteTransaction,
   deleting,
+  handleSelectedIncome,
   selectedId,
-  onSelectRow,
-  updateTransaction,
+  openEditTransaction,
   updating,
 }) => {
+  const selectedIncome = incomeData.find((item) => item.id === selectedId);
+  const actionDisabled = !selectedId || deleting != null || updating !== null;
+
   return (
     <div className="income-list">
       <div className="income-heading">
@@ -17,15 +20,12 @@ const Income = ({
         <button
           className="update-btn"
           onClick={() => {
-            if (selectedId) {
-              const selected = incomeData.find(
-                (item) => item.id === selectedId,
-              );
-              updateTransaction(selectedId, "income", selected);
+            if (selectedIncome) {
+              openEditTransaction(selectedIncome, "income");
             }
           }}
-          disabled={!selectedId || updating === selectedId}>
-          {updating === selectedId ? "Updating..." : "Update"}
+          disabled={actionDisabled}>
+          {updating === selectedId ? "Edit" : "Update"}
         </button>
         <button
           className="delete-btn"
@@ -34,8 +34,8 @@ const Income = ({
               deleteTransaction(selectedId, "income");
             }
           }}
-          disabled={!selectedId || deleting === selectedId}>
-          {deleting === selectedId ? "Deleting..." : "Delete"}
+          disabled={actionDisabled}>
+          delete
         </button>
       </div>
 
@@ -54,9 +54,9 @@ const Income = ({
               className={selectedId === item.id ? "selected" : ""}>
               <td className="select-col">
                 <input
-                  type="checkbox"
+                  type="radio"
                   checked={selectedId === item.id}
-                  onChange={() => onSelectRow(item.id)}
+                  onChange={() => handleSelectedIncome(item.id)}
                 />
               </td>
               <td className="item-col">{item.transactionName}</td>
