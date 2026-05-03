@@ -159,6 +159,18 @@ button:hover {
   background-color: #4169e1;
 }
 
+button:disabled,
+.delete-btn:disabled,
+.update-btn:disabled {
+  background-color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.update-btn,
+.delete-btn {
+  min-width: 110px;
+}
+
 @media (max-width: 768px) {
   .container {
     width: 90%;
@@ -173,6 +185,14 @@ button:hover {
   .transactions {
     flex-direction: column;
     gap: 20px;
+  }
+
+  .modal {
+    max-width: 100%;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
   }
 }
 
@@ -297,4 +317,59 @@ button:hover {
   cursor: pointer;
   width: 18px;
   height: 18px;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 20px;
+  z-index: 1000;
+}
+
+.modal {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  border-radius: var(--border-radius);
+  padding: 24px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal h2 {
+  margin-bottom: 16px;
+  color: var(--primary-color);
+}
+
+.modal-field {
+  margin-bottom: 16px;
+}
+
+.modal-field label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.modal-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 16px;
+}
+
+.modal-field input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 5px rgba(100, 149, 237, 0.5);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
