@@ -8,7 +8,7 @@ const expenseData = [
 ];
 
 const renderExpense = (overrideProps = {}) => {
-  const props = {
+  const mocks = {
     expenseData,
     deleteTransaction: jest.fn(),
     deleting: null,
