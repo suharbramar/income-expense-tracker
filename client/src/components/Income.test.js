@@ -8,7 +8,7 @@ const incomeData = [
 ];
 
 const renderIncome = (overrideProps = {}) => {
-  const props = {
+  const mocks = {
     incomeData,
     deleteTransaction: jest.fn(),
     deleting: null,
@@ -19,9 +19,9 @@ const renderIncome = (overrideProps = {}) => {
     ...overrideProps,
   };
 
-  render(<Income {...props} />);
+  render(<Income {...mocks} />);
 
-  return props;
+  return mocks;
 };
 
 test("renders income rows", () => {
@@ -34,11 +34,11 @@ test("renders income rows", () => {
 });
 
 test("calls selection handler when a row radio is selected", async () => {
-  const props = renderIncome();
+  const { handleSelectedIncome } = renderIncome();
 
   await userEvent.click(screen.getAllByRole("radio")[0]);
 
-  expect(props.handleSelectedIncome).toHaveBeenCalledWith(1);
+  expect(handleSelectedIncome).toHaveBeenCalledWith(1);
 });
 
 test("disables update and delete buttons when no income is selected", () => {
@@ -49,20 +49,17 @@ test("disables update and delete buttons when no income is selected", () => {
 });
 
 test("opens edit flow for the selected income", async () => {
-  const props = renderIncome({ selectedId: 1 });
+  const { openEditTransaction } = renderIncome({ selectedId: 1 });
 
   await userEvent.click(screen.getByRole("button", { name: /update/i }));
 
-  expect(props.openEditTransaction).toHaveBeenCalledWith(
-    incomeData[0],
-    "income",
-  );
+  expect(openEditTransaction).toHaveBeenCalledWith(incomeData[0], "income");
 });
 
 test("deletes the selected income", async () => {
-  const props = renderIncome({ selectedId: 1 });
+  const { deleteTransaction } = renderIncome({ selectedId: 1 });
 
   await userEvent.click(screen.getByRole("button", { name: /delete/i }));
 
-  expect(props.deleteTransaction).toHaveBeenCalledWith(1, "income");
+  expect(deleteTransaction).toHaveBeenCalledWith(1, "income");
 });

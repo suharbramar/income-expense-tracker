@@ -19,9 +19,9 @@ const renderExpense = (overrideProps = {}) => {
     ...overrideProps,
   };
 
-  render(<Expense {...props} />);
+  render(<Expense {...mocks} />);
 
-  return props;
+  return mocks;
 };
 
 test("renders expense rows", () => {
@@ -34,28 +34,25 @@ test("renders expense rows", () => {
 });
 
 test("calls selection handler when a row radio is selected", async () => {
-  const props = renderExpense();
+  const { onSelectRow } = renderExpense();
 
   await userEvent.click(screen.getAllByRole("radio")[0]);
 
-  expect(props.onSelectRow).toHaveBeenCalledWith(1);
+  expect(onSelectRow).toHaveBeenCalledWith(1);
 });
 
 test("opens edit flow for the selected expense", async () => {
-  const props = renderExpense({ selectedId: 1 });
+  const { openEditTransaction } = renderExpense({ selectedId: 1 });
 
   await userEvent.click(screen.getByRole("button", { name: /update/i }));
 
-  expect(props.openEditTransaction).toHaveBeenCalledWith(
-    expenseData[0],
-    "expense",
-  );
+  expect(openEditTransaction).toHaveBeenCalledWith(expenseData[0], "expense");
 });
 
 test("deletes the selected expense", async () => {
-  const props = renderExpense({ selectedId: 1 });
+  const { deleteTransaction } = renderExpense({ selectedId: 1 });
 
   await userEvent.click(screen.getByRole("button", { name: /delete/i }));
 
-  expect(props.deleteTransaction).toHaveBeenCalledWith(1, "expense");
+  expect(deleteTransaction).toHaveBeenCalledWith(1, "expense");
 });
