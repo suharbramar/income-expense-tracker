@@ -35,7 +35,7 @@ const Income = ({
             }
           }}
           disabled={actionDisabled}>
-          delete
+          Delete
         </button>
       </div>
 

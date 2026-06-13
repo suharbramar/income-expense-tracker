@@ -25,7 +25,7 @@ const InputForm = ({ postTransaction, loading }) => {
   return (
     <div className="container">
       <div className="container-item">
-        <label>Transaction Name :</label>
+        <label htmlFor="transaction-name">Transaction Name :</label>
         <input
           type="text"
           id="transaction-name"
@@ -35,7 +35,7 @@ const InputForm = ({ postTransaction, loading }) => {
       </div>
 
       <div className="container-item">
-        <label>Amount :</label>
+        <label htmlFor="amount">Amount :</label>
         <input
           type="number"
           id="amount"

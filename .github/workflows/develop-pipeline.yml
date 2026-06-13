@@ -10,10 +10,11 @@ on:
 env:
   NODE_VERSION: 20
   SSH_PORT: 22
-  CI: false
+  CI: true
 
 jobs:
-  build:
+  # Test job - runs first, catches issues early
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -30,8 +31,38 @@ jobs:
         run: npm ci
         working-directory: client
 
-      - name: Run tests (client)
-        run: CI=true npm test -- --watch=false --passWithNoTests
+      - name: Run linter (client)
+        run: npm run lint --if-present
+        working-directory: client
+
+      - name: Run unit tests (client)
+        run: npm test -- --coverage --watchAll=false
+        working-directory: client
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./client/coverage/lcov.info
+          flags: unittests
+          fail_ci_if_error: false
+
+  # Build job - depends on test passing
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies (client)
+        run: npm ci
         working-directory: client
 
       - name: Build client
@@ -48,6 +79,7 @@ jobs:
           if-no-files-found: error
           retention-days: 3
 
+  # Deploy job - only runs if build succeeds
   deploy:
     needs: build
     if: (github.event_name == 'push' && github.ref == 'refs/heads/develop') || github.event_name == 'workflow_dispatch'
