@@ -55,6 +55,73 @@ test("loads and renders income and expense transactions on startup", async () =>
   expect(screen.getByText("Rp 1500")).toBeInTheDocument();
 });
 
+test("shows an error alert when income data fails to load", async () => {
+  const incomeError = new Error("Failed to fetch income");
+
+  axios.get.mockImplementation((url) => {
+    if (url === `${API_URL}/income`) {
+      return Promise.reject(incomeError);
+    }
+
+    if (url === `${API_URL}/expense`) {
+      return Promise.resolve({ data: expense });
+    }
+
+    return Promise.reject(new Error(`Unhandled GET Request: ${url}`));
+  });
+
+  render(<App />);
+
+  await screen.findByText("Rent"); // verify it appears after async loading
+
+  await waitFor(() => {
+    expect(window.alert).toHaveBeenCalledWith(
+      "Error fetching income data. Please try again later.",
+    );
+  });
+
+  expect(console.error).toHaveBeenCalledWith(
+    "There was an error fetching the income data!",
+    incomeError,
+  );
+
+  expect(screen.queryByText("Salary")).not.toBeInTheDocument();
+});
+
+test("shows an error alert when expense data fails to load", async () => {
+  const expenseError = new Error("Failed to fetch expense");
+
+  axios.get.mockImplementation((url) => {
+    if (url === `${API_URL}/expense`) {
+      return Promise.reject(expenseError);
+    }
+
+    if (url === `${API_URL}/income`) {
+      return Promise.resolve({ data: income });
+    }
+
+    return Promise.reject(new Error(`Unhandled GET Request: ${url}`));
+  });
+
+  render(<App />);
+
+  await screen.findByText("Salary");
+
+  await waitFor(() => {
+    expect(window.alert).toHaveBeenCalledWith(
+      "Error fetching expense data. Please try again later.",
+    );
+  });
+
+  expect(console.error).toHaveBeenCalledWith(
+    "There was an error fetching the expense data!",
+    expenseError,
+  );
+
+  expect(screen.getByText("Salary")).toBeInTheDocument();
+  expect(screen.queryByText("Rent")).not.toBeInTheDocument();
+});
+
 test("adds an income transaction and refreshes the income list", async () => {
   await renderApp();
   axios.post.mockResolvedValueOnce({});
@@ -85,9 +152,7 @@ test("opens a populated edit modal without sending an update request", async () 
 
   const dialog = screen.getByRole("dialog", { name: /edit income/i });
 
-  expect(
-    dialog,
-  ).toBeInTheDocument();
+  expect(dialog).toBeInTheDocument();
   expect(within(dialog).getByLabelText(/transaction name/i)).toHaveValue(
     "Salary",
   );
