@@ -144,6 +144,31 @@ test("adds an income transaction and refreshes the income list", async () => {
   expect(window.alert).toHaveBeenCalledWith("Income added successfully!");
 });
 
+test("shows an error alert and resets loading when adding income fails", async () => {
+  const addIncomeError = new Error("Failed to add income");
+
+  await renderApp();
+  axios.post.mockRejectedValueOnce(addIncomeError);
+
+  await userEvent.type(screen.getByLabelText(/transaction name/i), "Bonus");
+  await userEvent.clear(screen.getByLabelText(/^amount/i));
+  await userEvent.type(screen.getByLabelText(/^amount/i), "1000");
+  await userEvent.click(screen.getByRole("button", { name: /add income/i }));
+
+  await waitFor(() => {
+    expect(window.alert).toHaveBeenCalledWith(
+      "Error adding the income transaction. Please try again later.",
+    );
+  });
+
+  expect(console.error).toHaveBeenCalledWith(
+    "There was an error adding the income transaction!",
+    addIncomeError,
+  );
+  expect(screen.getByRole("button", { name: /add income/i })).toBeEnabled();
+  expect(screen.getByRole("button", { name: /add expense/i })).toBeEnabled();
+});
+
 test("opens a populated edit modal without sending an update request", async () => {
   await renderApp();
 
