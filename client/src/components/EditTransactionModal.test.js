@@ -9,14 +9,6 @@ const transaction = {
   amount: 5000,
 };
 
-beforeEach(() => {
-  jest.spyOn(window, "alert").mockImplementation(() => {});
-});
-
-afterEach(() => {
-  window.alert.mockRestore();
-});
-
 test("renders nothing when there is no transaction", () => {
   render(
     <EditTransactionModal
@@ -74,8 +66,9 @@ test("saves trimmed name and numeric amount", async () => {
   });
 });
 
-test("blocks invalid save values", async () => {
+test("reports invalid save values through onMessage", async () => {
   const onSave = jest.fn();
+  const onMessage = jest.fn();
 
   render(
     <EditTransactionModal
@@ -83,13 +76,15 @@ test("blocks invalid save values", async () => {
       updating={null}
       onCancel={jest.fn()}
       onSave={onSave}
+      onMessage={onMessage}
     />,
   );
 
   await userEvent.clear(screen.getByLabelText(/transaction name/i));
   await userEvent.click(screen.getByRole("button", { name: /save/i }));
 
-  expect(window.alert).toHaveBeenCalledWith(
+  expect(onMessage).toHaveBeenCalledWith(
+    "error",
     "Please enter a transaction name and a positive amount.",
   );
   expect(onSave).not.toHaveBeenCalled();

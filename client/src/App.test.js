@@ -34,100 +34,52 @@ const renderApp = async () => {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  jest.spyOn(window, "alert").mockImplementation(() => {});
   jest.spyOn(console, "error").mockImplementation(() => {});
 });
 
 afterEach(() => {
-  window.alert.mockRestore();
   console.error.mockRestore();
 });
 
-test("loads and renders income and expense transactions on startup", async () => {
+test("loads and renders the unified transaction list on startup", async () => {
   await renderApp();
 
   expect(axios.get).toHaveBeenCalledWith(`${API_URL}/income`);
   expect(axios.get).toHaveBeenCalledWith(`${API_URL}/expense`);
   expect(screen.getByText("Income and Expense Tracker")).toBeInTheDocument();
   expect(screen.getByText("Salary")).toBeInTheDocument();
-  expect(screen.getByText("Rp5000")).toBeInTheDocument();
+  expect(screen.getByText("Rp 5.000,00")).toBeInTheDocument();
   expect(screen.getByText("Rent")).toBeInTheDocument();
-  expect(screen.getByText("Rp 1500")).toBeInTheDocument();
+  expect(screen.getByText("Rp 1.500,00")).toBeInTheDocument();
+  expect(screen.getByText("Total Balance: Rp 3.500,00")).toBeInTheDocument();
 });
 
-test("shows an error alert when income data fails to load", async () => {
-  const incomeError = new Error("Failed to fetch income");
+test("shows an error banner when initial transaction data fails to load", async () => {
+  const transactionError = new Error("Failed to fetch transactions");
 
-  axios.get.mockImplementation((url) => {
-    if (url === `${API_URL}/income`) {
-      return Promise.reject(incomeError);
-    }
-
-    if (url === `${API_URL}/expense`) {
-      return Promise.resolve({ data: expense });
-    }
-
-    return Promise.reject(new Error(`Unhandled GET Request: ${url}`));
-  });
+  axios.get.mockRejectedValue(transactionError);
 
   render(<App />);
 
-  await screen.findByText("Rent"); // verify it appears after async loading
-
-  await waitFor(() => {
-    expect(window.alert).toHaveBeenCalledWith(
-      "Error fetching income data. Please try again later.",
-    );
-  });
+  expect(
+    await screen.findByText(
+      "Error fetching transaction data. Please try again later.",
+    ),
+  ).toBeInTheDocument();
+  expect(screen.getByRole("alert")).toBeInTheDocument();
 
   expect(console.error).toHaveBeenCalledWith(
-    "There was an error fetching the income data!",
-    incomeError,
+    "There was an error fetching the transaction data!",
+    transactionError,
   );
-
   expect(screen.queryByText("Salary")).not.toBeInTheDocument();
 });
 
-test("shows an error alert when expense data fails to load", async () => {
-  const expenseError = new Error("Failed to fetch expense");
-
-  axios.get.mockImplementation((url) => {
-    if (url === `${API_URL}/expense`) {
-      return Promise.reject(expenseError);
-    }
-
-    if (url === `${API_URL}/income`) {
-      return Promise.resolve({ data: income });
-    }
-
-    return Promise.reject(new Error(`Unhandled GET Request: ${url}`));
-  });
-
-  render(<App />);
-
-  await screen.findByText("Salary");
-
-  await waitFor(() => {
-    expect(window.alert).toHaveBeenCalledWith(
-      "Error fetching expense data. Please try again later.",
-    );
-  });
-
-  expect(console.error).toHaveBeenCalledWith(
-    "There was an error fetching the expense data!",
-    expenseError,
-  );
-
-  expect(screen.getByText("Salary")).toBeInTheDocument();
-  expect(screen.queryByText("Rent")).not.toBeInTheDocument();
-});
-
-test("adds an income transaction and refreshes the income list", async () => {
+test("adds an income transaction and shows a success message", async () => {
   await renderApp();
   axios.post.mockResolvedValueOnce({});
 
   await userEvent.type(screen.getByLabelText(/transaction name/i), "Bonus");
-  await userEvent.clear(screen.getByLabelText(/^amount/i));
   await userEvent.type(screen.getByLabelText(/^amount/i), "1000");
   await userEvent.click(screen.getByRole("button", { name: /add income/i }));
 
@@ -138,29 +90,26 @@ test("adds an income transaction and refreshes the income list", async () => {
     });
   });
 
-  await waitFor(() => {
-    expect(axios.get).toHaveBeenCalledWith(`${API_URL}/income`);
-  });
-  expect(window.alert).toHaveBeenCalledWith("Income added successfully!");
+  expect(await screen.findByText("Income added successfully!")).toBeInTheDocument();
+  expect(screen.getByRole("status")).toBeInTheDocument();
 });
 
-test("shows an error alert and resets loading when adding income fails", async () => {
+test("shows an error banner and resets loading when adding income fails", async () => {
   const addIncomeError = new Error("Failed to add income");
 
   await renderApp();
   axios.post.mockRejectedValueOnce(addIncomeError);
 
   await userEvent.type(screen.getByLabelText(/transaction name/i), "Bonus");
-  await userEvent.clear(screen.getByLabelText(/^amount/i));
   await userEvent.type(screen.getByLabelText(/^amount/i), "1000");
   await userEvent.click(screen.getByRole("button", { name: /add income/i }));
 
-  await waitFor(() => {
-    expect(window.alert).toHaveBeenCalledWith(
+  expect(
+    await screen.findByText(
       "Error adding the income transaction. Please try again later.",
-    );
-  });
-
+    ),
+  ).toBeInTheDocument();
+  expect(screen.getByRole("alert")).toBeInTheDocument();
   expect(console.error).toHaveBeenCalledWith(
     "There was an error adding the income transaction!",
     addIncomeError,
@@ -172,8 +121,10 @@ test("shows an error alert and resets loading when adding income fails", async (
 test("opens a populated edit modal without sending an update request", async () => {
   await renderApp();
 
-  await userEvent.click(screen.getAllByRole("radio")[0]);
-  await userEvent.click(screen.getAllByRole("button", { name: /update/i })[0]);
+  await userEvent.click(
+    screen.getByRole("radio", { name: /select income salary/i }),
+  );
+  await userEvent.click(screen.getByRole("button", { name: /edit/i }));
 
   const dialog = screen.getByRole("dialog", { name: /edit income/i });
 
@@ -191,8 +142,10 @@ test("submits edited income values and closes the edit modal", async () => {
   await renderApp();
   axios.put.mockResolvedValueOnce({});
 
-  await userEvent.click(screen.getAllByRole("radio")[0]);
-  await userEvent.click(screen.getAllByRole("button", { name: /update/i })[0]);
+  await userEvent.click(
+    screen.getByRole("radio", { name: /select income salary/i }),
+  );
+  await userEvent.click(screen.getByRole("button", { name: /edit/i }));
 
   const dialog = screen.getByRole("dialog", { name: /edit income/i });
 
@@ -218,14 +171,19 @@ test("submits edited income values and closes the edit modal", async () => {
   await waitFor(() => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
-  expect(window.alert).toHaveBeenCalledWith("Income updated successfully!");
+  expect(
+    await screen.findByText("Income updated successfully!"),
+  ).toBeInTheDocument();
+  expect(screen.getByRole("status")).toBeInTheDocument();
 });
 
 test("blocks invalid edit values before calling the update API", async () => {
   await renderApp();
 
-  await userEvent.click(screen.getAllByRole("radio")[0]);
-  await userEvent.click(screen.getAllByRole("button", { name: /update/i })[0]);
+  await userEvent.click(
+    screen.getByRole("radio", { name: /select income salary/i }),
+  );
+  await userEvent.click(screen.getByRole("button", { name: /edit/i }));
 
   const dialog = screen.getByRole("dialog", { name: /edit income/i });
 
@@ -233,17 +191,21 @@ test("blocks invalid edit values before calling the update API", async () => {
   await userEvent.click(within(dialog).getByRole("button", { name: /save/i }));
 
   expect(axios.put).not.toHaveBeenCalled();
-  expect(window.alert).toHaveBeenCalledWith(
-    "Please enter a transaction name and a positive amount.",
-  );
+  expect(
+    screen.getByText("Please enter a transaction name and a positive amount."),
+  ).toBeInTheDocument();
+  expect(screen.getByRole("alert")).toBeInTheDocument();
 });
 
 test("selecting an expense clears the selected income", async () => {
   await renderApp();
 
-  const radios = screen.getAllByRole("radio");
-  const incomeRadio = radios[0];
-  const expenseRadio = radios[1];
+  const incomeRadio = screen.getByRole("radio", {
+    name: /select income salary/i,
+  });
+  const expenseRadio = screen.getByRole("radio", {
+    name: /select expense rent/i,
+  });
 
   await userEvent.click(incomeRadio);
   expect(incomeRadio).toBeChecked();
@@ -253,21 +215,21 @@ test("selecting an expense clears the selected income", async () => {
   expect(incomeRadio).not.toBeChecked();
 });
 
-test("deletes the selected expense and refreshes the expense list", async () => {
+test("deletes the selected expense and refreshes the transaction list", async () => {
   await renderApp();
   axios.delete.mockResolvedValueOnce({});
 
-  await userEvent.click(screen.getAllByRole("radio")[1]);
-  await userEvent.click(screen.getAllByRole("button", { name: /delete/i })[1]);
+  await userEvent.click(
+    screen.getByRole("radio", { name: /select expense rent/i }),
+  );
+  await userEvent.click(screen.getByRole("button", { name: /delete/i }));
 
   await waitFor(() => {
     expect(axios.delete).toHaveBeenCalledWith(`${API_URL}/expense/2`);
   });
 
-  await waitFor(() => {
-    expect(axios.get).toHaveBeenCalledWith(`${API_URL}/expense`);
-  });
-  expect(window.alert).toHaveBeenCalledWith(
-    "Transaction deleted successfully!",
-  );
+  expect(
+    await screen.findByText("Transaction deleted successfully!"),
+  ).toBeInTheDocument();
+  expect(screen.getByRole("status")).toBeInTheDocument();
 });
