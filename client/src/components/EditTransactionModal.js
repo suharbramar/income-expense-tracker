@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 
-const EditTransactionModal = ({ transaction, updating, onCancel, onSave }) => {
+const EditTransactionModal = ({
+  transaction,
+  updating,
+  onCancel,
+  onSave,
+  onMessage = () => {},
+}) => {
   const [transactionName, setTransactionName] = useState("");
   const [amount, setAmount] = useState("");
 
@@ -32,7 +38,10 @@ const EditTransactionModal = ({ transaction, updating, onCancel, onSave }) => {
       !Number.isFinite(numericAmount) ||
       numericAmount <= 0
     ) {
-      alert("Please enter a transaction name and a positive amount.");
+      onMessage(
+        "error",
+        "Please enter a transaction name and a positive amount.",
+      );
       return;
     }
 

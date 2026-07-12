@@ -1,8 +1,15 @@
 import Header from "./Header";
 import InputForm from "./InputForm";
 import ItemHeader from "./ItemHeader";
-import Income from "./Income";
-import Expense from "./Expense";
+import TransactionList from "./TransactionList";
 import EditTransactionModal from "./EditTransactionModal";
+import MessageBanner from "./MessageBanner";
 
-export { Header, InputForm, ItemHeader, Income, Expense, EditTransactionModal };
+export {
+  Header,
+  InputForm,
+  ItemHeader,
+  TransactionList,
+  EditTransactionModal,
+  MessageBanner,
+};

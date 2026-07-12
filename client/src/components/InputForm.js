@@ -1,29 +1,40 @@
 import { useState } from "react";
 
-const InputForm = ({ postTransaction, loading }) => {
+const InputForm = ({ postTransaction, loading, onMessage = () => {} }) => {
   const [transactionName, setTransactionName] = useState("");
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState("");
 
-  const handleAddTransaction = async (e, type) => {
+  const handleAddTransaction = async (e) => {
+    e.preventDefault();
+
+    const submitter = e.nativeEvent.submitter || document.activeElement;
+    const type = submitter?.value || "income";
+    const trimmedTransactionName = transactionName.trim();
+    const numericAmount = Number(amount);
+
     // Validate input fields
-    if (transactionName === "" || amount === 0 || amount <= 0) {
-      alert("Please fill in all fields.");
+    if (
+      !trimmedTransactionName ||
+      !Number.isFinite(numericAmount) ||
+      numericAmount <= 0
+    ) {
+      onMessage("error", "Please fill in all fields.");
       return;
     }
 
     // Prepare the payload for the POST request
     const payload = {
-      transactionName: transactionName,
-      amount: parseFloat(amount),
+      transactionName: trimmedTransactionName,
+      amount: numericAmount,
     };
 
-    postTransaction(e, type, payload, loading);
+    postTransaction(type, payload);
     setTransactionName("");
-    setAmount(0);
+    setAmount("");
   };
 
   return (
-    <div className="container">
+    <form className="container" onSubmit={handleAddTransaction}>
       <div className="container-item">
         <label htmlFor="transaction-name">Transaction Name :</label>
         <input
@@ -47,18 +58,18 @@ const InputForm = ({ postTransaction, loading }) => {
       <div className="button-group">
         <button
           type="submit"
-          onClick={(e) => handleAddTransaction(e, "income")}
+          value="income"
           disabled={loading}>
           {loading ? "Adding Income..." : "Add Income"}
         </button>
         <button
           type="submit"
-          onClick={(e) => handleAddTransaction(e, "expense")}
+          value="expense"
           disabled={loading}>
           {loading ? "Adding Expense..." : "Add Expense"}
         </button>
       </div>
-    </div>
+    </form>
   );
 };
 
