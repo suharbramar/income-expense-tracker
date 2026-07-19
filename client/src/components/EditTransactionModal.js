@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const EditTransactionModal = ({
   transaction,
@@ -9,6 +9,7 @@ const EditTransactionModal = ({
 }) => {
   const [transactionName, setTransactionName] = useState("");
   const [amount, setAmount] = useState("");
+  const transactionNameInputRef = useRef(null);
 
   useEffect(() => {
     if (transaction) {
@@ -16,6 +17,28 @@ const EditTransactionModal = ({
       setAmount(transaction.amount || "");
     }
   }, [transaction]);
+
+  useEffect(() => {
+    if (!transaction) {
+      return undefined;
+    }
+
+    const previouslyFocusedElement = document.activeElement;
+    transactionNameInputRef.current?.focus();
+
+    const handleEscapeKey = (event) => {
+      if (event.key === "Escape" && updating === null) {
+        onCancel();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscapeKey);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscapeKey);
+      previouslyFocusedElement?.focus?.();
+    };
+  }, [transaction, updating, onCancel]);
 
   if (!transaction) {
     return null;
@@ -66,6 +89,7 @@ const EditTransactionModal = ({
             <label htmlFor="edit-transaction-name">Transaction Name</label>
             <input
               id="edit-transaction-name"
+              ref={transactionNameInputRef}
               type="text"
               value={transactionName}
               onChange={(e) => setTransactionName(e.target.value)}

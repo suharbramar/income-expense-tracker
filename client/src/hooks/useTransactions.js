@@ -109,7 +109,7 @@ const useTransactions = ({ onClearSelection }) => {
     }
   };
 
-  const openEditTransaction = (record) => {
+  const openEditTransaction = useCallback((record) => {
     if (!record || !isSingleRecordId(record.id)) {
       showMessage("error", "Please select a single transaction to update.");
       return;
@@ -118,15 +118,15 @@ const useTransactions = ({ onClearSelection }) => {
     setEditingTransaction({
       ...record,
     });
-  };
+  }, [showMessage]);
 
-  const closedEditTransaction = () => {
+  const closedEditTransaction = useCallback(() => {
     if (updating) {
       return;
     }
 
     setEditingTransaction(null);
-  };
+  }, [updating]);
 
   const removeTransaction = async (record) => {
     if (!record) {

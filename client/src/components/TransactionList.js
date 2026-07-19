@@ -63,30 +63,33 @@ const TransactionList = ({
           </tr>
         </thead>
         <tbody>
-          {transactionData.map((item) => (
-            <tr
-              key={getTransactionKey(item.id, item.type)}
-              className={
-                selectedIdAndType === getTransactionKey(item.id, item.type)
-                  ? "selected"
-                  : ""
-              }>
-              <td className="select-col">
-                <input
-                  type="radio"
-                  name="selected-transaction"
-                  aria-label={`Select ${item.type} ${item.transactionName}`}
-                  checked={
-                    selectedIdAndType === getTransactionKey(item.id, item.type)
-                  }
-                  onChange={() => onSelect(item.id, item.type)}
-                />
-              </td>
-              <td className="item-col">{item.transactionName}</td>
-              <td className="amount-col">Rp {formatAmount(item.amount)}</td>
-              <td className="type-col">{item.type}</td>
-            </tr>
-          ))}
+          {transactionData.map((item) => {
+            const transactionKey = getTransactionKey(item.id, item.type);
+            const radioId = `select-${item.type}-${item.id}`;
+            const isSelected = selectedIdAndType === transactionKey;
+
+            return (
+              <tr
+                key={transactionKey}
+                className={isSelected ? "selected" : ""}>
+                <td className="select-col">
+                  <input
+                    id={radioId}
+                    type="radio"
+                    name="selected-transaction"
+                    checked={isSelected}
+                    onChange={() => onSelect(item.id, item.type)}
+                  />
+                  <label htmlFor={radioId} className="sr-only">
+                    Select {item.type} {item.transactionName}
+                  </label>
+                </td>
+                <td className="item-col">{item.transactionName}</td>
+                <td className="amount-col">Rp {formatAmount(item.amount)}</td>
+                <td className="type-col">{item.type}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

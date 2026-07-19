@@ -49,6 +49,20 @@ test("calls select handler with transaction id and type", async () => {
   expect(onSelect).toHaveBeenCalledWith(1, "income");
 });
 
+test("gives each transaction radio button an accessible label", () => {
+  renderTransactionList();
+
+  expect(
+    screen.getByRole("radio", { name: /select income salary/i }),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("radio", { name: /select income bonus/i }),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("radio", { name: /select expense rent/i }),
+  ).toBeInTheDocument();
+});
+
 test("keeps edit and delete disabled when no transaction is selected", () => {
   renderTransactionList();
 

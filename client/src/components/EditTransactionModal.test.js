@@ -39,6 +39,19 @@ test("renders a populated edit form", () => {
   expect(screen.getByLabelText(/transaction amount/i)).toHaveValue(5000);
 });
 
+test("focuses the transaction name input when the modal opens", () => {
+  render(
+    <EditTransactionModal
+      transaction={transaction}
+      updating={null}
+      onCancel={jest.fn()}
+      onSave={jest.fn()}
+    />,
+  );
+
+  expect(screen.getByLabelText(/transaction name/i)).toHaveFocus();
+});
+
 test("saves trimmed name and numeric amount", async () => {
   const onSave = jest.fn();
 
@@ -88,6 +101,40 @@ test("reports invalid save values through onMessage", async () => {
     "Please enter a transaction name and a positive amount.",
   );
   expect(onSave).not.toHaveBeenCalled();
+});
+
+test("closes the modal when Escape is pressed", async () => {
+  const onCancel = jest.fn();
+
+  render(
+    <EditTransactionModal
+      transaction={transaction}
+      updating={null}
+      onCancel={onCancel}
+      onSave={jest.fn()}
+    />,
+  );
+
+  await userEvent.keyboard("{Escape}");
+
+  expect(onCancel).toHaveBeenCalledTimes(1);
+});
+
+test("does not close the modal with Escape while saving", async () => {
+  const onCancel = jest.fn();
+
+  render(
+    <EditTransactionModal
+      transaction={transaction}
+      updating={1}
+      onCancel={onCancel}
+      onSave={jest.fn()}
+    />,
+  );
+
+  await userEvent.keyboard("{Escape}");
+
+  expect(onCancel).not.toHaveBeenCalled();
 });
 
 test("disables controls while saving", () => {
