@@ -1,69 +1,31 @@
 import "./App.css";
-import {
-  Header,
-  InputForm,
-  ItemHeader,
-  TransactionList,
-  EditTransactionModal,
-  MessageBanner,
-} from "./components/Index";
 
-import useTransactions from "./hooks/useTransactions";
-import useTransactionSelection from "./hooks/useTransactionSelection";
+import { lazy, Suspense } from "react";
+import Header from "./components/Header";
+import { NavLink, Route, Routes } from "react-router-dom";
 
-function App() {
-  const {
-    selectedTransactionId,
-    handleSelectedTransaction,
-    clearSelectedTransaction,
-  } = useTransactionSelection();
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const TransactionsPage = lazy(() => import("./pages/TransactionsPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
 
-  const {
-    transactionData,
-    loading,
-    updating,
-    deleting,
-    editingTransaction,
-    message,
-    postTransaction,
-    editTransaction,
-    removeTransaction,
-    openEditTransaction,
-    closedEditTransaction,
-    showMessage,
-    clearMessage,
-  } = useTransactions({ onClearSelection: clearSelectedTransaction });
-
+const App = () => {
   return (
     <div className="App">
       <Header name="Income and Expense Tracker" />
-      <MessageBanner message={message} onDismiss={clearMessage} />
-      <InputForm
-        postTransaction={postTransaction}
-        loading={loading}
-        onMessage={showMessage}
-      />
-      <ItemHeader />
-      <div className="transactions">
-        <EditTransactionModal
-          transaction={editingTransaction}
-          updating={updating}
-          onCancel={closedEditTransaction}
-          onSave={editTransaction}
-          onMessage={showMessage}
-        />
-        <TransactionList
-          transactionData={transactionData}
-          selectedIdAndType={selectedTransactionId}
-          onSelect={handleSelectedTransaction}
-          openEditTransaction={openEditTransaction}
-          deleteTransaction={removeTransaction}
-          deleting={deleting}
-          updating={updating}
-        />
-      </div>
+      <nav className="app-nav" aria-label="Main Navigation">
+        <NavLink to="/">Dashboard</NavLink>
+        <NavLink to="/transactions">Transactions</NavLink>
+        <NavLink to="/about">About</NavLink>
+      </nav>
+      <Suspense fallback={<p className="page">Loading page...</p>}>
+        <Routes>
+          <Route path="/" element={<DashboardPage />}></Route>
+          <Route path="/transactions" element={<TransactionsPage />}></Route>
+          <Route path="/about" element={<AboutPage />}></Route>
+        </Routes>
+      </Suspense>
     </div>
   );
-}
+};
 
 export default App;

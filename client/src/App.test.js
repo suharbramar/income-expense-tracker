@@ -1,6 +1,7 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import axios from "axios";
+import { MemoryRouter } from "react-router-dom";
 import App from "./App";
 
 jest.mock("axios");
@@ -24,12 +25,23 @@ const mockInitialRequests = () => {
   });
 };
 
+const renderAppAtRoute = (route = "/") => {
+  render(
+    <MemoryRouter
+      future={{ v7_relativeSplatPath: true, v7_startTransition: true }}
+      initialEntries={[route]}
+    >
+      <App />
+    </MemoryRouter>,
+  );
+};
+
 const renderApp = async () => {
   mockInitialRequests();
-  render(<App />);
+  renderAppAtRoute("/transactions");
 
-  await screen.findByText("Salary");
-  await screen.findByText("Rent");
+  await screen.findByText("Salary", {}, { timeout: 5000 });
+  await screen.findByText("Rent", {}, { timeout: 5000 });
 };
 
 beforeEach(() => {
@@ -39,6 +51,27 @@ beforeEach(() => {
 
 afterEach(() => {
   console.error.mockRestore();
+});
+
+test("renders the dashboard page by default", async () => {
+  renderAppAtRoute();
+
+  expect(
+    await screen.findByRole("heading", { name: /dashboard/i }),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("link", { name: /transactions/i }),
+  ).toBeInTheDocument();
+});
+
+test("navigates to the about page", async () => {
+  renderAppAtRoute();
+
+  await userEvent.click(screen.getByRole("link", { name: /about/i }));
+
+  expect(
+    await screen.findByRole("heading", { name: /about/i }),
+  ).toBeInTheDocument();
 });
 
 test("loads and renders the unified transaction list on startup", async () => {
@@ -59,7 +92,7 @@ test("shows an error banner when initial transaction data fails to load", async 
 
   axios.get.mockRejectedValue(transactionError);
 
-  render(<App />);
+  renderAppAtRoute("/transactions");
 
   expect(
     await screen.findByText(

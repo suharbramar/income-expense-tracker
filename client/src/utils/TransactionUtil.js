@@ -11,26 +11,37 @@ const removeClientOnlyFields = (transaction) => {
   return serverTransaction;
 };
 
+const amountFormatter = new Intl.NumberFormat("id-ID", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 const formatAmount = (amount) => {
-  return new Intl.NumberFormat("id-ID", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Number(amount));
+  return amountFormatter.format(Number(amount));
 };
 
 const getTransactionTotals = (transactions) => {
-  const totalIncome = transactions
-    .filter((transaction) => transaction.type === "income")
-    .reduce((total, transaction) => total + Number(transaction.amount), 0);
+  const totals = {
+    totalIncome: 0,
+    totalExpense: 0,
+  };
 
-  const totalExpense = transactions
-    .filter((transaction) => transaction.type === "expense")
-    .reduce((total, transaction) => total + Number(transaction.amount), 0);
+  transactions.forEach((transaction) => {
+    const amount = Number(transaction.amount);
+
+    if (transaction.type === "income") {
+      totals.totalIncome += amount;
+      return;
+    }
+
+    if (transaction.type === "expense") {
+      totals.totalExpense += amount;
+    }
+  });
 
   return {
-    totalIncome,
-    totalExpense,
-    totalBalance: totalIncome - totalExpense,
+    ...totals,
+    totalBalance: totals.totalIncome - totals.totalExpense,
   };
 };
 
