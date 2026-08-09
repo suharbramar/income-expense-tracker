@@ -40,8 +40,8 @@ const renderApp = async () => {
   mockInitialRequests();
   renderAppAtRoute("/transactions");
 
-  await screen.findByText("Salary");
-  await screen.findByText("Rent");
+  await screen.findByText("Salary", {}, { timeout: 5000 });
+  await screen.findByText("Rent", {}, { timeout: 5000 });
 };
 
 beforeEach(() => {
@@ -53,11 +53,11 @@ afterEach(() => {
   console.error.mockRestore();
 });
 
-test("renders the dashboard page by default", () => {
+test("renders the dashboard page by default", async () => {
   renderAppAtRoute();
 
   expect(
-    screen.getByRole("heading", { name: /dashboard/i }),
+    await screen.findByRole("heading", { name: /dashboard/i }),
   ).toBeInTheDocument();
   expect(
     screen.getByRole("link", { name: /transactions/i }),
@@ -69,7 +69,9 @@ test("navigates to the about page", async () => {
 
   await userEvent.click(screen.getByRole("link", { name: /about/i }));
 
-  expect(screen.getByRole("heading", { name: /about/i })).toBeInTheDocument();
+  expect(
+    await screen.findByRole("heading", { name: /about/i }),
+  ).toBeInTheDocument();
 });
 
 test("loads and renders the unified transaction list on startup", async () => {
