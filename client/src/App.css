@@ -376,3 +376,31 @@ button:disabled,
   justify-content: flex-end;
   gap: 10px;
 }
+
+.app-nav {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px auto;
+  flex-wrap: wrap;
+}
+
+.app-nav a {
+  padding: 8px 12px;
+  color: var(--primary-color);
+  text-decoration: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: white;
+}
+
+.app-nav a.active {
+  color: white;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.page {
+  width: min(90%, 960px);
+  margin: 0 auto 24px;
+}
