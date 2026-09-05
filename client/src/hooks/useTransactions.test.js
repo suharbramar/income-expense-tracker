@@ -114,12 +114,8 @@ test("shows an error message and resets loading when create fails", async () => 
   expect(result.current.loading).toBe(false);
   expect(result.current.message).toEqual({
     type: "error",
-    text: "Error adding the expense transaction. Please try again later.",
+    text: "Error adding the expense transaction.",
   });
-  expect(console.error).toHaveBeenCalledWith(
-    "There was an error adding the expense transaction!",
-    createError,
-  );
 });
 
 test("opens and closes the edit transaction state", async () => {

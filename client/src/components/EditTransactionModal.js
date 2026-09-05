@@ -1,30 +1,37 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { TransactionSchema } from "../validation/TransactionSchema";
 
-const EditTransactionModal = ({
-  transaction,
-  updating,
-  onCancel,
-  onSave,
-  onMessage = () => {},
-}) => {
-  const [transactionName, setTransactionName] = useState("");
-  const [amount, setAmount] = useState("");
-  const transactionNameInputRef = useRef(null);
-
-  useEffect(() => {
-    if (transaction) {
-      setTransactionName(transaction.transactionName || "");
-      setAmount(transaction.amount || "");
-    }
-  }, [transaction]);
+const EditTransactionModal = ({ transaction, updating, onCancel, onSave }) => {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(TransactionSchema),
+    defaultValues: {
+      transactionName: "",
+      amount: "",
+    },
+  });
 
   useEffect(() => {
     if (!transaction) {
-      return undefined;
+      return;
     }
 
-    const previouslyFocusedElement = document.activeElement;
-    transactionNameInputRef.current?.focus();
+    reset({
+      transactionName: transaction.transactionName || "",
+      amount: transaction.amount ?? "",
+    });
+  }, [transaction, reset]);
+
+  useEffect(() => {
+    if (!transaction) {
+      return;
+    }
 
     const handleEscapeKey = (event) => {
       if (event.key === "Escape" && updating === null) {
@@ -36,7 +43,6 @@ const EditTransactionModal = ({
 
     return () => {
       document.removeEventListener("keydown", handleEscapeKey);
-      previouslyFocusedElement?.focus?.();
     };
   }, [transaction, updating, onCancel]);
 
@@ -45,35 +51,15 @@ const EditTransactionModal = ({
   }
 
   const isSaving = updating === transaction.id;
+  const isBusy = isSaving || isSubmitting;
+
   const typeLabel = transaction.type
     ? transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)
     : "Transaction";
   const title = `Edit ${typeLabel}`;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const trimmedTransactionName = transactionName.trim();
-    const numericAmount = Number(amount);
-
-    if (
-      !trimmedTransactionName ||
-      !Number.isFinite(numericAmount) ||
-      numericAmount <= 0
-    ) {
-      onMessage(
-        "error",
-        "Please enter a transaction name and a positive amount.",
-      );
-      return;
-    }
-
-    const transactionPayload = {
-      transactionName: trimmedTransactionName,
-      amount: numericAmount,
-    };
-
-    onSave(transaction.id, transaction.type, transactionPayload);
+  const handleSaveTransaction = async (values) => {
+    await onSave(transaction.id, transaction.type, values);
   };
 
   return (
@@ -84,17 +70,30 @@ const EditTransactionModal = ({
         aria-modal="true"
         aria-labelledby="edit-transaction-title">
         <h2 id="edit-transaction-title">{title}</h2>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(handleSaveTransaction)}>
           <div className="modal-field">
             <label htmlFor="edit-transaction-name">Transaction Name</label>
             <input
               id="edit-transaction-name"
-              ref={transactionNameInputRef}
               type="text"
-              value={transactionName}
-              onChange={(e) => setTransactionName(e.target.value)}
-              disabled={isSaving}
+              autoFocus
+              {...register("transactionName")}
+              aria-invalid={Boolean(errors.transactionName)}
+              aria-describedby={
+                errors.transactionName
+                  ? "edit-transaction-name-error"
+                  : undefined
+              }
+              disabled={isBusy}
             />
+            {errors.transactionName && (
+              <p
+                id="edit-transaction-name-error"
+                className="form-error"
+                role="alert">
+                {errors.transactionName.message}
+              </p>
+            )}
           </div>
 
           <div className="modal-field">
@@ -102,18 +101,29 @@ const EditTransactionModal = ({
             <input
               id="edit-transaction-amount"
               type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              disabled={isSaving}
+              {...register("amount")}
+              aria-invalid={Boolean(errors.amount)}
+              aria-describedby={
+                errors.amount ? "edit-transaction-amount-error" : undefined
+              }
+              disabled={isBusy}
             />
+            {errors.amount && (
+              <p
+                id="edit-transaction-amount-error"
+                className="form-error"
+                role="alert">
+                {errors.amount.message}
+              </p>
+            )}
           </div>
 
           <div className="modal-actions">
-            <button type="submit" disabled={isSaving}>
-              {isSaving ? "Updating..." : "Save"}
+            <button type="submit" disabled={isBusy}>
+              {isBusy ? "Updating..." : "Save"}
             </button>
 
-            <button type="button" onClick={onCancel} disabled={isSaving}>
+            <button type="button" onClick={onCancel} disabled={isBusy}>
               Cancel
             </button>
           </div>

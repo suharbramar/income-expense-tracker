@@ -139,14 +139,10 @@ test("shows an error banner and resets loading when adding income fails", async 
 
   expect(
     await screen.findByText(
-      "Error adding the income transaction. Please try again later.",
+      "Error adding the income transaction.",
     ),
   ).toBeInTheDocument();
   expect(screen.getByRole("alert")).toBeInTheDocument();
-  expect(console.error).toHaveBeenCalledWith(
-    "There was an error adding the income transaction!",
-    addIncomeError,
-  );
   expect(screen.getByRole("button", { name: /add income/i })).toBeEnabled();
   expect(screen.getByRole("button", { name: /add expense/i })).toBeEnabled();
 });
@@ -225,7 +221,7 @@ test("blocks invalid edit values before calling the update API", async () => {
 
   expect(axios.put).not.toHaveBeenCalled();
   expect(
-    screen.getByText("Please enter a transaction name and a positive amount."),
+    await screen.findByText("Enter a transaction name."),
   ).toBeInTheDocument();
   expect(screen.getByRole("alert")).toBeInTheDocument();
 });

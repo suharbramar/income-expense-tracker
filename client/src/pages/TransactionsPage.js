@@ -26,18 +26,13 @@ const TransactionsPage = () => {
     removeTransaction,
     openEditTransaction,
     closedEditTransaction,
-    showMessage,
     clearMessage,
   } = useTransactions({ onClearSelection: clearSelectedTransaction });
 
   return (
     <main className="page transactions-page">
       <MessageBanner message={message} onDismiss={clearMessage} />
-      <InputForm
-        postTransaction={postTransaction}
-        loading={loading}
-        onMessage={showMessage}
-      />
+      <InputForm postTransaction={postTransaction} loading={loading} />
       <ItemHeader />
       <div className="transactions">
         <EditTransactionModal
@@ -45,7 +40,6 @@ const TransactionsPage = () => {
           updating={updating}
           onCancel={closedEditTransaction}
           onSave={editTransaction}
-          onMessage={showMessage}
         />
         <TransactionList
           transactionData={transactionData}
