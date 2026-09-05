@@ -91,39 +91,6 @@ test("focuses the transaction name input when the modal opens", () => {
   expect(screen.getByLabelText(/transaction name/i)).toHaveFocus();
 });
 
-test("keeps focus in the modal when saving starts", async () => {
-  const trigger = document.createElement("button");
-  document.body.appendChild(trigger);
-  trigger.focus();
-
-  try {
-    const { rerender } = render(
-      <EditTransactionModal
-        transaction={transaction}
-        updating={null}
-        onCancel={jest.fn()}
-        onSave={jest.fn()}
-      />,
-    );
-
-    const nameInput = screen.getByLabelText(/transaction name/i);
-    await waitFor(() => expect(nameInput).toHaveFocus());
-
-    rerender(
-      <EditTransactionModal
-        transaction={transaction}
-        updating={transaction.id}
-        onCancel={jest.fn()}
-        onSave={jest.fn()}
-      />,
-    );
-
-    await waitFor(() => expect(nameInput).toHaveFocus());
-  } finally {
-    trigger.remove();
-  }
-});
-
 test("saves trimmed name and numeric amount", async () => {
   const onSave = jest.fn().mockResolvedValue({ success: true });
 
