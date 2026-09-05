@@ -43,24 +43,23 @@ const useTransactions = ({ onClearSelection }) => {
   }, [loadTransactions, showMessage]);
 
   const postTransaction = async (type, payload) => {
+    const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
     setLoading(true);
 
-    // Send the POST request to add income
     try {
       await createTransaction(type, payload);
-      await loadTransactions();
 
-      const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+      try {
+        await loadTransactions();
+      } catch (refreshError) {
+        console.error("Transaction created, but refresh failed.", refreshError);
+      }
+
       showMessage("success", `${typeLabel} added successfully!`);
+      return { success: true };
     } catch (error) {
-      showMessage(
-        "error",
-        `Error adding the ${type} transaction. Please try again later.`,
-      );
-      console.error(
-        `There was an error adding the ${type} transaction!`,
-        error,
-      );
+      showMessage("error", `Error adding the ${type} transaction.`);
+      return { success: false };
     } finally {
       setLoading(false);
     }
@@ -109,16 +108,19 @@ const useTransactions = ({ onClearSelection }) => {
     }
   };
 
-  const openEditTransaction = useCallback((record) => {
-    if (!record || !isSingleRecordId(record.id)) {
-      showMessage("error", "Please select a single transaction to update.");
-      return;
-    }
+  const openEditTransaction = useCallback(
+    (record) => {
+      if (!record || !isSingleRecordId(record.id)) {
+        showMessage("error", "Please select a single transaction to update.");
+        return;
+      }
 
-    setEditingTransaction({
-      ...record,
-    });
-  }, [showMessage]);
+      setEditingTransaction({
+        ...record,
+      });
+    },
+    [showMessage],
+  );
 
   const closedEditTransaction = useCallback(() => {
     if (updating) {
