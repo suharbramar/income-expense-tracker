@@ -3,6 +3,21 @@ import {
   getTransactionKey,
   getTransactionTotals,
 } from "../utils/TransactionUtil";
+import type {
+  MutationResult,
+  Transaction,
+  TransactionType,
+} from "../types/transaction";
+
+type TransactionListProps = {
+  transactionData: Transaction[];
+  selectedIdAndType: string | null;
+  onSelect: (id: number, type: TransactionType) => void;
+  openEditTransaction: (transaction: Transaction) => void;
+  deleteTransaction: (transaction: Transaction) => Promise<MutationResult>;
+  deleting: number | null;
+  updating: number | null;
+};
 
 const TransactionList = ({
   transactionData,
@@ -12,7 +27,7 @@ const TransactionList = ({
   deleteTransaction,
   deleting,
   updating,
-}) => {
+}: TransactionListProps) => {
   const selectedTransaction = transactionData.find(
     (item) => selectedIdAndType === getTransactionKey(item.id, item.type),
   );

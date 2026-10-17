@@ -1,4 +1,4 @@
-const DashBoardPage = () => {
+const DashBoardPage = (): JSX.Element => {
   return (
     <main className="page">
       <h2>Dashboard</h2>

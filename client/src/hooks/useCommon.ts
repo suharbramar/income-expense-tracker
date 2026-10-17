@@ -1,9 +1,10 @@
 import { useCallback, useState } from "react";
+import type { AppMessage, MessageType } from "../types/transaction";
 
 const useCommon = () => {
-  const [message, setMessage] = useState(null);
+  const [message, setMessage] = useState<AppMessage | null>(null);
 
-  const showMessage = useCallback((type, text) => {
+  const showMessage = useCallback((type: MessageType, text: string) => {
     setMessage({ type, text });
   }, []);
 

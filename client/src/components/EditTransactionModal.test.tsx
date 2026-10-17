@@ -1,8 +1,9 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import EditTransactionModal from "./EditTransactionModal";
+import type { Transaction } from "../types/transaction";
 
-const transaction = {
+const transaction: Transaction = {
   id: 1,
   type: "income",
   transactionName: "Salary",
@@ -40,7 +41,7 @@ test("renders a populated edit form", () => {
 });
 
 test("replaces form values when a different transaction is selected", async () => {
-  const secondTransaction = {
+  const secondTransaction: Transaction = {
     id: 2,
     type: "expense",
     transactionName: "Rent",

@@ -8,7 +8,7 @@ const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const TransactionsPage = lazy(() => import("./pages/TransactionsPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 
-const App = () => {
+const App = (): JSX.Element => {
   return (
     <div className="App">
       <Header name="Income and Expense Tracker" />

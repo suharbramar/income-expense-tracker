@@ -10,15 +10,27 @@ import { isSingleRecordId } from "../utils/TransactionUtil";
 
 import useCommon from "./useCommon";
 
-const useTransactions = ({ onClearSelection }) => {
-  const [transactionData, setTransactionData] = useState([]);
-  const [editingTransaction, setEditingTransaction] = useState(null);
+import type {
+  MutationResult,
+  Transaction,
+  TransactionPayload,
+  TransactionType,
+} from "../types/transaction";
+
+type UseTransactionsOptions = {
+  onClearSelection: () => void;
+};
+
+const useTransactions = ({ onClearSelection }: UseTransactionsOptions) => {
+  const [transactionData, setTransactionData] = useState<Transaction[]>([]);
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
   const [loading, setLoading] = useState(false);
-  const [deleting, setDeleting] = useState(null);
-  const [updating, setUpdating] = useState(null);
+  const [deleting, setDeleting] = useState<number | null>(null);
+  const [updating, setUpdating] = useState<number | null>(null);
   const { message, showMessage, clearMessage } = useCommon();
 
-  const loadTransactions = useCallback(async () => {
+  const loadTransactions = useCallback(async (): Promise<void> => {
     const data = await getTransactions();
     setTransactionData(data);
   }, []);
@@ -42,7 +54,10 @@ const useTransactions = ({ onClearSelection }) => {
     loadInitialTransactions();
   }, [loadTransactions, showMessage]);
 
-  const postTransaction = async (type, payload) => {
+  const postTransaction = async (
+    type: TransactionType,
+    payload: TransactionPayload,
+  ): Promise<MutationResult> => {
     const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
     setLoading(true);
 
@@ -65,10 +80,14 @@ const useTransactions = ({ onClearSelection }) => {
     }
   };
 
-  const editTransaction = async (id, type, payload) => {
-    if (!isSingleRecordId(id)) {
+  const editTransaction = async (
+    id: number | null,
+    type: TransactionType,
+    payload: TransactionPayload,
+  ): Promise<MutationResult> => {
+    if (!isSingleRecordId(id) || typeof id !== "number") {
       showMessage("error", "Please select a single transaction to update.");
-      return;
+      return { success: false };
     }
 
     const transactionName = payload.transactionName.trim();
@@ -79,7 +98,7 @@ const useTransactions = ({ onClearSelection }) => {
         "error",
         "Please enter a transaction name and a positive amount.",
       );
-      return;
+      return { success: false };
     }
 
     const transactionPayload = { transactionName, amount };
@@ -94,6 +113,7 @@ const useTransactions = ({ onClearSelection }) => {
 
       onClearSelection();
       setEditingTransaction(null);
+      return { success: true };
     } catch (error) {
       showMessage(
         "error",
@@ -103,13 +123,14 @@ const useTransactions = ({ onClearSelection }) => {
         `There was an error updating the ${type} transaction!`,
         error,
       );
+      return { success: false };
     } finally {
       setUpdating(null);
     }
   };
 
   const openEditTransaction = useCallback(
-    (record) => {
+    (record: Transaction): void => {
       if (!record || !isSingleRecordId(record.id)) {
         showMessage("error", "Please select a single transaction to update.");
         return;
@@ -122,7 +143,7 @@ const useTransactions = ({ onClearSelection }) => {
     [showMessage],
   );
 
-  const closedEditTransaction = useCallback(() => {
+  const closedEditTransaction = useCallback((): void => {
     if (updating) {
       return;
     }
@@ -130,10 +151,12 @@ const useTransactions = ({ onClearSelection }) => {
     setEditingTransaction(null);
   }, [updating]);
 
-  const removeTransaction = async (record) => {
+  const removeTransaction = async (
+    record: Transaction | null,
+  ): Promise<MutationResult> => {
     if (!record) {
       showMessage("error", "Please select a single transaction to delete.");
-      return;
+      return { success: false };
     }
 
     const transactionId = record.id;
@@ -141,7 +164,7 @@ const useTransactions = ({ onClearSelection }) => {
 
     if (!isSingleRecordId(transactionId)) {
       showMessage("error", "Please select a single transaction to delete.");
-      return;
+      return { success: false };
     }
 
     setDeleting(transactionId);
@@ -151,6 +174,7 @@ const useTransactions = ({ onClearSelection }) => {
 
       onClearSelection();
       showMessage("success", "Transaction deleted successfully!");
+      return { success: true };
     } catch (error) {
       showMessage(
         "error",
@@ -160,6 +184,7 @@ const useTransactions = ({ onClearSelection }) => {
         `There was an error deleting the ${transactionType} transaction!`,
         error,
       );
+      return { success: false };
     } finally {
       setDeleting(null);
     }

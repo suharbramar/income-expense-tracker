@@ -5,6 +5,7 @@ import {
   isSingleRecordId,
   removeClientOnlyFields,
 } from "./TransactionUtil";
+import type { Transaction } from "../types/transaction";
 
 test("creates unique transaction keys from type and id", () => {
   expect(getTransactionKey(1, "income")).toBe("income:1");
@@ -16,7 +17,7 @@ test("checks whether a value is a single record id", () => {
   expect(isSingleRecordId("abc")).toBe(true);
   expect(isSingleRecordId(null)).toBe(false);
   expect(isSingleRecordId(undefined)).toBe(false);
-  expect(isSingleRecordId("")).toBe(false);
+  expect(isSingleRecordId(0)).toBe(false);
   expect(isSingleRecordId([1, 2])).toBe(false);
 });
 
@@ -37,16 +38,16 @@ test("removes UI-only fields before sending data to the server", () => {
 
 test("formats amounts with Indonesian number separators", () => {
   expect(formatAmount(250000)).toBe("250.000,00");
-  expect(formatAmount("5000")).toBe("5.000,00");
+  expect(formatAmount(5000)).toBe("5.000,00");
 });
 
 test("calculates income, expense, and balance totals", () => {
   expect(
     getTransactionTotals([
-      { id: 1, type: "income", amount: 500000 },
-      { id: 2, type: "income", amount: "250000" },
-      { id: 1, type: "expense", amount: 100000 },
-    ]),
+      { id: 1, transactionName: "Salary", type: "income", amount: 500000 },
+      { id: 2, transactionName: "Bonus", type: "income", amount: 250000 },
+      { id: 1, transactionName: "Rent", type: "expense", amount: 100000 },
+    ] as Transaction[]),
   ).toEqual({
     totalIncome: 750000,
     totalExpense: 100000,

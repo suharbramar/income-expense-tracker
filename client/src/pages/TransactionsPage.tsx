@@ -7,7 +7,7 @@ import MessageBanner from "../components/MessageBanner";
 import useTransactions from "../hooks/useTransactions";
 import useTransactionSelection from "../hooks/useTransactionSelection";
 
-const TransactionsPage = () => {
+const TransactionsPage = (): JSX.Element => {
   const {
     selectedTransactionId,
     handleSelectedTransaction,

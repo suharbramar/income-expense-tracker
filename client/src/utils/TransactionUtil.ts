@@ -1,12 +1,21 @@
-const getTransactionKey = (id, type) => {
+import type {
+  Transaction,
+  ServerTransaction,
+  TransactionTotals,
+  TransactionType,
+} from "../types/transaction";
+
+const getTransactionKey = (id: number, type: TransactionType): string => {
   return `${type}:${id}`;
 };
 
-const isSingleRecordId = (id) => {
-  return !Array.isArray(id) && id !== null && id !== undefined && id !== "";
+const isSingleRecordId = (id: unknown): boolean => {
+  return !Array.isArray(id) && id !== null && id !== undefined && id !== 0;
 };
 
-const removeClientOnlyFields = (transaction) => {
+const removeClientOnlyFields = (
+  transaction: Transaction,
+): ServerTransaction => {
   const { type, ...serverTransaction } = transaction;
   return serverTransaction;
 };
@@ -16,17 +25,19 @@ const amountFormatter = new Intl.NumberFormat("id-ID", {
   maximumFractionDigits: 2,
 });
 
-const formatAmount = (amount) => {
+const formatAmount = (amount: number): string => {
   return amountFormatter.format(Number(amount));
 };
 
-const getTransactionTotals = (transactions) => {
+const getTransactionTotals = (
+  transaction: Transaction[],
+): TransactionTotals => {
   const totals = {
     totalIncome: 0,
     totalExpense: 0,
   };
 
-  transactions.forEach((transaction) => {
+  transaction.forEach((transaction: Transaction) => {
     const amount = Number(transaction.amount);
 
     if (transaction.type === "income") {

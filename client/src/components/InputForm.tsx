@@ -1,24 +1,47 @@
-import { useForm } from "react-hook-form";
+import { useRef } from "react";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TransactionSchema } from "../validation/TransactionSchema";
+import type {
+  MutationResult,
+  TransactionPayload,
+  TransactionType,
+} from "../types/transaction";
 
-const InputForm = ({ postTransaction, loading = false }) => {
+type InputFormProps = {
+  postTransaction: (
+    type: TransactionType,
+    payload: TransactionPayload,
+  ) => Promise<MutationResult>;
+  loading?: boolean;
+};
+
+const InputForm = ({ postTransaction, loading = false }: InputFormProps) => {
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm({
+  } = useForm<TransactionPayload>({
     resolver: zodResolver(TransactionSchema),
     defaultValues: {
       transactionName: "",
-      amount: "",
     },
   });
+  const lastClickedType = useRef<TransactionType>("income");
 
-  const handleAddTransaction = async (values, event) => {
-    const submitter = event?.nativeEvent?.submitter || document.activeElement;
-    const type = submitter?.value || "income";
+  const handleAddTransaction: SubmitHandler<TransactionPayload> = async (
+    values,
+    event,
+  ) => {
+    const nativeEvent = event?.nativeEvent as SubmitEvent | undefined;
+    const submitter = nativeEvent?.submitter;
+    const submittedType =
+      submitter instanceof HTMLButtonElement
+        ? submitter.value
+        : lastClickedType.current;
+    const type: TransactionType =
+      submittedType === "expense" ? "expense" : "income";
     const result = await postTransaction(type, values);
     if (result.success) {
       reset();
@@ -65,10 +88,24 @@ const InputForm = ({ postTransaction, loading = false }) => {
       </div>
 
       <div className="button-group">
-        <button type="submit" value="income" disabled={isButtonBusy}>
+        <button
+          type="submit"
+          value="income"
+          disabled={isButtonBusy}
+          onClick={() => {
+            lastClickedType.current = "income";
+          }}
+        >
           {isButtonBusy ? "Adding Income..." : "Add Income"}
         </button>
-        <button type="submit" value="expense" disabled={isButtonBusy}>
+        <button
+          type="submit"
+          value="expense"
+          disabled={isButtonBusy}
+          onClick={() => {
+            lastClickedType.current = "expense";
+          }}
+        >
           {isButtonBusy ? "Adding Expense..." : "Add Expense"}
         </button>
       </div>
