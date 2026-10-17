@@ -1,4 +1,11 @@
-const MessageBanner = ({ message, onDismiss }) => {
+import type { AppMessage } from "../types/transaction";
+
+type MessageBannerProps = {
+  message: AppMessage | null;
+  onDismiss: () => void;
+};
+
+const MessageBanner = ({ message, onDismiss }: MessageBannerProps) => {
   if (!message) {
     return null;
   }

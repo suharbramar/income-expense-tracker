@@ -1,8 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import TransactionList from "./TransactionList";
+import type { Transaction } from "../types/transaction";
 
-const transactionData = [
+const transactionData: Transaction[] = [
   { id: 1, transactionName: "Salary", amount: 500000, type: "income" },
   { id: 2, transactionName: "Bonus", amount: 250000, type: "income" },
   { id: 1, transactionName: "Rent", amount: 100000, type: "expense" },

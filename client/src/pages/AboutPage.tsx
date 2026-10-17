@@ -1,4 +1,4 @@
-const AboutPage = () => {
+const AboutPage = (): JSX.Element => {
   return (
     <main className="page">
       <h2>About</h2>

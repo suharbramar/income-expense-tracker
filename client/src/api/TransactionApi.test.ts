@@ -7,6 +7,7 @@ import {
 } from "./TransactionApi";
 
 jest.mock("axios");
+const mockedAxios = jest.mocked(axios);
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
@@ -15,7 +16,7 @@ beforeEach(() => {
 });
 
 test("fetches and combines income and expense transactions", async () => {
-  axios.get
+  mockedAxios.get
     .mockResolvedValueOnce({
       data: [{ id: 1, transactionName: "Salary", amount: 5000 }],
     })
@@ -25,9 +26,9 @@ test("fetches and combines income and expense transactions", async () => {
 
   const result = await getTransactions();
 
-  expect(axios.get).toHaveBeenCalledWith(`${API_URL}/income`);
-  expect(axios.get).toHaveBeenCalledWith(`${API_URL}/expense`);
-  expect(axios.get).toHaveBeenCalledTimes(2);
+  expect(mockedAxios.get).toHaveBeenCalledWith(`${API_URL}/income`);
+  expect(mockedAxios.get).toHaveBeenCalledWith(`${API_URL}/expense`);
+  expect(mockedAxios.get).toHaveBeenCalledTimes(2);
 
   expect(result).toEqual([
     {
@@ -53,7 +54,7 @@ test("creates a transaction with the requested type and payload", async () => {
 
   await createTransaction("income", payload);
 
-  expect(axios.post).toHaveBeenCalledWith(`${API_URL}/income`, payload);
+  expect(mockedAxios.post).toHaveBeenCalledWith(`${API_URL}/income`, payload);
 });
 
 test("updates a transaction with the requested type, id, and payload", async () => {
@@ -64,7 +65,7 @@ test("updates a transaction with the requested type, id, and payload", async () 
 
   await updateTransaction("income", 1, payload);
 
-  expect(axios.put).toHaveBeenCalledWith(
+  expect(mockedAxios.put).toHaveBeenCalledWith(
     `${API_URL}/income/1`,
     payload,
   );
@@ -73,12 +74,12 @@ test("updates a transaction with the requested type, id, and payload", async () 
 test("deletes a transaction with the requested id and type", async () => {
   await deleteTransaction(2, "expense");
 
-  expect(axios.delete).toHaveBeenCalledWith(`${API_URL}/expense/2`);
+  expect(mockedAxios.delete).toHaveBeenCalledWith(`${API_URL}/expense/2`);
 });
 
 test("passes API errors to the caller", async () => {
   const apiError = new Error("Server unavailable");
-  axios.get.mockRejectedValueOnce(apiError);
+  mockedAxios.get.mockRejectedValueOnce(apiError);
 
   await expect(getTransactions()).rejects.toBe(apiError);
 });

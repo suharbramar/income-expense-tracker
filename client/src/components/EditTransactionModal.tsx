@@ -1,19 +1,40 @@
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TransactionSchema } from "../validation/TransactionSchema";
+import type {
+  MutationResult,
+  Transaction,
+  TransactionPayload,
+  TransactionType,
+} from "../types/transaction";
 
-const EditTransactionModal = ({ transaction, updating, onCancel, onSave }) => {
+type EditTransactionModalProps = {
+  transaction: Transaction | null;
+  updating: number | null;
+  onCancel: () => void;
+  onSave: (
+    id: number,
+    type: TransactionType,
+    payload: TransactionPayload,
+  ) => Promise<MutationResult>;
+};
+
+const EditTransactionModal = ({
+  transaction,
+  updating,
+  onCancel,
+  onSave,
+}: EditTransactionModalProps) => {
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm({
+  } = useForm<TransactionPayload>({
     resolver: zodResolver(TransactionSchema),
     defaultValues: {
       transactionName: "",
-      amount: "",
     },
   });
 
@@ -33,7 +54,7 @@ const EditTransactionModal = ({ transaction, updating, onCancel, onSave }) => {
       return;
     }
 
-    const handleEscapeKey = (event) => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === "Escape" && updating === null) {
         onCancel();
       }
@@ -58,7 +79,9 @@ const EditTransactionModal = ({ transaction, updating, onCancel, onSave }) => {
     : "Transaction";
   const title = `Edit ${typeLabel}`;
 
-  const handleSaveTransaction = async (values) => {
+  const handleSaveTransaction: SubmitHandler<TransactionPayload> = async (
+    values,
+  ) => {
     await onSave(transaction.id, transaction.type, values);
   };
 

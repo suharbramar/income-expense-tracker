@@ -3,16 +3,22 @@ import userEvent from "@testing-library/user-event";
 import axios from "axios";
 import { MemoryRouter } from "react-router-dom";
 import App from "./App";
+import type { ServerTransaction } from "./types/transaction";
 
 jest.mock("axios");
+const mockedAxios = jest.mocked(axios);
 
 const API_URL = "http://localhost:3001";
 
-const income = [{ id: 1, transactionName: "Salary", amount: 5000 }];
-const expense = [{ id: 2, transactionName: "Rent", amount: 1500 }];
+const income: ServerTransaction[] = [
+  { id: 1, transactionName: "Salary", amount: 5000 },
+];
+const expense: ServerTransaction[] = [
+  { id: 2, transactionName: "Rent", amount: 1500 },
+];
 
 const mockInitialRequests = () => {
-  axios.get.mockImplementation((url) => {
+  mockedAxios.get.mockImplementation((url: string) => {
     if (url === `${API_URL}/income`) {
       return Promise.resolve({ data: income });
     }
@@ -44,13 +50,15 @@ const renderApp = async () => {
   await screen.findByText("Rent", {}, { timeout: 5000 });
 };
 
+const consoleErrorSpy = jest.spyOn(console, "error");
+
 beforeEach(() => {
   jest.clearAllMocks();
-  jest.spyOn(console, "error").mockImplementation(() => {});
+  consoleErrorSpy.mockImplementation(() => {});
 });
 
 afterEach(() => {
-  console.error.mockRestore();
+  consoleErrorSpy.mockClear();
 });
 
 test("renders the dashboard page by default", async () => {
@@ -77,8 +85,8 @@ test("navigates to the about page", async () => {
 test("loads and renders the unified transaction list on startup", async () => {
   await renderApp();
 
-  expect(axios.get).toHaveBeenCalledWith(`${API_URL}/income`);
-  expect(axios.get).toHaveBeenCalledWith(`${API_URL}/expense`);
+  expect(mockedAxios.get).toHaveBeenCalledWith(`${API_URL}/income`);
+  expect(mockedAxios.get).toHaveBeenCalledWith(`${API_URL}/expense`);
   expect(screen.getByText("Income and Expense Tracker")).toBeInTheDocument();
   expect(screen.getByText("Salary")).toBeInTheDocument();
   expect(screen.getByText("Rp 5.000,00")).toBeInTheDocument();
@@ -90,7 +98,7 @@ test("loads and renders the unified transaction list on startup", async () => {
 test("shows an error banner when initial transaction data fails to load", async () => {
   const transactionError = new Error("Failed to fetch transactions");
 
-  axios.get.mockRejectedValue(transactionError);
+  mockedAxios.get.mockRejectedValue(transactionError);
 
   renderAppAtRoute("/transactions");
 
@@ -101,7 +109,7 @@ test("shows an error banner when initial transaction data fails to load", async 
   ).toBeInTheDocument();
   expect(screen.getByRole("alert")).toBeInTheDocument();
 
-  expect(console.error).toHaveBeenCalledWith(
+  expect(consoleErrorSpy).toHaveBeenCalledWith(
     "There was an error fetching the transaction data!",
     transactionError,
   );
@@ -110,14 +118,14 @@ test("shows an error banner when initial transaction data fails to load", async 
 
 test("adds an income transaction and shows a success message", async () => {
   await renderApp();
-  axios.post.mockResolvedValueOnce({});
+  mockedAxios.post.mockResolvedValueOnce({});
 
   await userEvent.type(screen.getByLabelText(/transaction name/i), "Bonus");
   await userEvent.type(screen.getByLabelText(/^amount/i), "1000");
   await userEvent.click(screen.getByRole("button", { name: /add income/i }));
 
   await waitFor(() => {
-    expect(axios.post).toHaveBeenCalledWith(`${API_URL}/income`, {
+    expect(mockedAxios.post).toHaveBeenCalledWith(`${API_URL}/income`, {
       transactionName: "Bonus",
       amount: 1000,
     });
@@ -131,7 +139,7 @@ test("shows an error banner and resets loading when adding income fails", async 
   const addIncomeError = new Error("Failed to add income");
 
   await renderApp();
-  axios.post.mockRejectedValueOnce(addIncomeError);
+  mockedAxios.post.mockRejectedValueOnce(addIncomeError);
 
   await userEvent.type(screen.getByLabelText(/transaction name/i), "Bonus");
   await userEvent.type(screen.getByLabelText(/^amount/i), "1000");
@@ -164,12 +172,12 @@ test("opens a populated edit modal without sending an update request", async () 
   expect(within(dialog).getByLabelText(/transaction amount/i)).toHaveValue(
     5000,
   );
-  expect(axios.put).not.toHaveBeenCalled();
+  expect(mockedAxios.put).not.toHaveBeenCalled();
 });
 
 test("submits edited income values and closes the edit modal", async () => {
   await renderApp();
-  axios.put.mockResolvedValueOnce({});
+  mockedAxios.put.mockResolvedValueOnce({});
 
   await userEvent.click(
     screen.getByRole("radio", { name: /select income salary/i }),
@@ -191,7 +199,7 @@ test("submits edited income values and closes the edit modal", async () => {
   await userEvent.click(within(dialog).getByRole("button", { name: /save/i }));
 
   await waitFor(() => {
-    expect(axios.put).toHaveBeenCalledWith(`${API_URL}/income/1`, {
+    expect(mockedAxios.put).toHaveBeenCalledWith(`${API_URL}/income/1`, {
       transactionName: "Updated Salary",
       amount: 6000,
     });
@@ -219,7 +227,7 @@ test("blocks invalid edit values before calling the update API", async () => {
   await userEvent.clear(within(dialog).getByLabelText(/transaction name/i));
   await userEvent.click(within(dialog).getByRole("button", { name: /save/i }));
 
-  expect(axios.put).not.toHaveBeenCalled();
+  expect(mockedAxios.put).not.toHaveBeenCalled();
   expect(
     await screen.findByText("Enter a transaction name."),
   ).toBeInTheDocument();
@@ -246,7 +254,7 @@ test("selecting an expense clears the selected income", async () => {
 
 test("deletes the selected expense and refreshes the transaction list", async () => {
   await renderApp();
-  axios.delete.mockResolvedValueOnce({});
+  mockedAxios.delete.mockResolvedValueOnce({});
 
   await userEvent.click(
     screen.getByRole("radio", { name: /select expense rent/i }),
@@ -254,7 +262,7 @@ test("deletes the selected expense and refreshes the transaction list", async ()
   await userEvent.click(screen.getByRole("button", { name: /delete/i }));
 
   await waitFor(() => {
-    expect(axios.delete).toHaveBeenCalledWith(`${API_URL}/expense/2`);
+    expect(mockedAxios.delete).toHaveBeenCalledWith(`${API_URL}/expense/2`);
   });
 
   expect(
