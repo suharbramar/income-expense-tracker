@@ -51,7 +51,11 @@ const InputForm = ({ postTransaction, loading = false }: InputFormProps) => {
   const isButtonBusy = loading || isSubmitting;
 
   return (
-    <form className="container" onSubmit={handleSubmit(handleAddTransaction)}>
+    <form
+      className="container"
+      aria-label="Add transaction"
+      onSubmit={handleSubmit(handleAddTransaction)}
+    >
       <div className="container-item">
         <label htmlFor="transaction-name">Transaction Name :</label>
         <input
