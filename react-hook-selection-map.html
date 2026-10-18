@@ -1,0 +1,43 @@
+<div id="react-hook-map" aria-labelledby="hook-map-title">
+  <h2 id="hook-map-title">Choose a React Hook</h2>
+  <div class="viz-controls">
+    <label class="form-label" for="hook-need">What are you trying to do?</label>
+    <select class="form-select" id="hook-need">
+      <option value="ui">Store a value that changes the UI</option>
+      <option value="external">Synchronize with a browser, network, or other external system</option>
+      <option value="shared">Read a value supplied by a distant parent</option>
+      <option value="mutable">Keep a DOM node or a mutable value outside rendering</option>
+      <option value="complex">Manage several related state transitions</option>
+      <option value="calculation">Avoid repeating a measured expensive calculation</option>
+      <option value="callback">Keep a callback stable for a memoized child</option>
+      <option value="urgent">Keep a heavy update from blocking urgent interaction</option>
+    </select>
+  </div>
+  <div class="card" aria-live="polite">
+    <p class="text-muted" id="hook-category">State</p>
+    <h3 id="hook-name">useState</h3>
+    <p id="hook-reason">Choose this when a value should cause React to render a new UI.</p>
+    <p class="text-small" id="hook-caution">First check whether the value can be derived during rendering instead of stored.</p>
+  </div>
+</div>
+<script>
+  const choices = {
+    ui: ['State', 'useState', 'Choose this when a value should cause React to render a new UI.', 'First check whether the value can be derived during rendering instead of stored.'],
+    external: ['Effects', 'useEffect', 'Choose this to connect React to an external system and clean it up when inputs change.', 'Do not use it for ordinary derived data or event-driven application flow.'],
+    shared: ['Context', 'useContext', 'Choose this to read a shared value from a distant provider.', 'Keep rapidly changing, unrelated values out of one large context.'],
+    mutable: ['Refs', 'useRef', 'Choose this for a DOM node, timer, or another persistent value that should not re-render the UI.', 'If the user must see the update, store it in state instead.'],
+    complex: ['State', 'useReducer', 'Choose this when related updates are easier to describe as named actions.', 'A single simple value is usually clearer with useState.'],
+    calculation: ['Performance', 'useMemo', 'Choose this to cache a calculation only after profiling identifies unnecessary expensive work.', 'Memoization is optional optimization, not a correctness requirement.'],
+    callback: ['Performance', 'useCallback', 'Choose this when function identity matters to a memoized child or another Hook.', 'It does not make a function execute faster by itself.'],
+    urgent: ['Performance', 'useTransition', 'Choose this to mark a non-urgent screen update that may yield to typing or clicks.', 'Keep controlled input updates urgent; transition the expensive result instead.']
+  };
+  const select = document.getElementById('hook-need');
+  function update() {
+    const [category, name, reason, caution] = choices[select.value];
+    document.getElementById('hook-category').textContent = category;
+    document.getElementById('hook-name').textContent = name;
+    document.getElementById('hook-reason').textContent = reason;
+    document.getElementById('hook-caution').textContent = caution;
+  }
+  select.addEventListener('change', update);
+</script>

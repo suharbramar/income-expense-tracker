@@ -113,6 +113,14 @@ test("uses the native submitter when the browser provides one", async () => {
 
   await fillValidForm();
   const expenseButton = screen.getByRole("button", { name: /add expense/i });
+<<<<<<< HEAD
+  const form = screen.getByRole("form", { name: /add transaction/i });
+  const submitEvent = createEvent.submit(form);
+  Object.defineProperty(submitEvent, "submitter", {
+    value: expenseButton,
+  });
+  fireEvent(form, submitEvent);
+=======
   const form = expenseButton.closest("form");
 
   expect(form).not.toBeNull();
@@ -121,6 +129,7 @@ test("uses the native submitter when the browser provides one", async () => {
     value: expenseButton,
   });
   fireEvent(form as HTMLFormElement, submitEvent);
+>>>>>>> 68cfff81332259012b3e33c42ff69ad5cc7e6dd3
 
   await waitFor(() => {
     expect(postTransaction).toHaveBeenCalledWith("expense", {
