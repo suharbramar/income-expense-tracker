@@ -1,56 +1,24 @@
 {
   "income": [
     {
-      "id": 2,
-      "transactionName": "Freelance Project",
-      "amount": 1200
-    },
-    {
-      "transactionName": "hustel",
-      "amount": 100000,
-      "id": 3
-    },
-    {
-      "transactionName": "hustle2",
-      "amount": 150000,
-      "id": 4
-    },
-    {
-      "transactionName": "hustle",
-      "amount": 35000,
-      "id": 5
-    },
-    {
-      "transactionName": "hustle2",
-      "amount": 450000,
-      "id": 6
-    },
-    {
       "transactionName": "THR",
-      "amount": 10000000,
+      "amount": 50000000,
       "id": 7
     },
     {
-      "transactionName": "BONUS",
-      "amount": 10000000,
-      "id": 8
+      "transactionName": "bonus",
+      "amount": 50000000,
+      "id": 11
+    },
+    {
+      "transactionName": "bonus",
+      "amount": 12000000,
+      "id": 12
     }
   ],
   "expense": [
     {
-      "id": 1,
-      "transactionName": "Rent",
-      "amount": 1500,
-      "date": "2024-06-01"
-    },
-    {
-      "id": 2,
-      "transactionName": "Groceries",
-      "amount": 300,
-      "date": "2024-06-10"
-    },
-    {
-      "transactionName": "TOKEN",
+      "transactionName": "Token Listrik",
       "amount": 120000,
       "id": 3
     },
@@ -60,9 +28,44 @@
       "id": 5
     },
     {
-      "transactionName": "Kontrakan",
-      "amount": 3000000,
+      "transactionName": "Bayar AIR",
+      "amount": 120000,
       "id": 6
+    },
+    {
+      "transactionName": "Bayar Indihome",
+      "amount": 450000,
+      "id": 8
+    },
+    {
+      "transactionName": "Beli UPS",
+      "amount": 1200000,
+      "id": 9
+    },
+    {
+      "transactionName": "dinner",
+      "amount": 500000,
+      "id": 10
+    },
+    {
+      "transactionName": "dinner 2",
+      "amount": 1000000,
+      "id": 11
+    },
+    {
+      "transactionName": "dinner 2",
+      "amount": 560000,
+      "id": 12
+    },
+    {
+      "transactionName": "Internet",
+      "amount": 500000,
+      "id": 13
+    },
+    {
+      "transactionName": "Internet",
+      "amount": 500000,
+      "id": 14
     }
   ]
 }
