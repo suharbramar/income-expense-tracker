@@ -128,6 +128,35 @@ test("shows an error message and resets loading when create fails", async () => 
   });
 });
 
+test("keeps the create success result when refreshing after create fails", async () => {
+  const refreshError = new Error("Refresh failed");
+  mockedCreateTransaction.mockResolvedValueOnce(
+    {} as Awaited<ReturnType<typeof createTransaction>>,
+  );
+  const { result } = renderUseTransactions();
+
+  await waitFor(() => {
+    expect(result.current.transactionData).toEqual(transactions);
+  });
+  mockedGetTransactions.mockRejectedValueOnce(refreshError);
+
+  await act(async () => {
+    await result.current.postTransaction("income", {
+      transactionName: "Bonus",
+      amount: 1000,
+    });
+  });
+
+  expect(result.current.message).toEqual({
+    type: "success",
+    text: "Income added successfully!",
+  });
+  expect(consoleErrorSpy).toHaveBeenCalledWith(
+    "Transaction created, but refresh failed.",
+    refreshError,
+  );
+});
+
 test("opens and closes the edit transaction state", async () => {
   const { result } = renderUseTransactions();
 
@@ -146,6 +175,24 @@ test("opens and closes the edit transaction state", async () => {
   });
 
   expect(result.current.editingTransaction).toBeNull();
+});
+
+test("does not open edit state for an invalid transaction id", async () => {
+  const { result } = renderUseTransactions();
+
+  await waitFor(() => {
+    expect(result.current.transactionData).toEqual(transactions);
+  });
+
+  act(() => {
+    result.current.openEditTransaction({ ...transactions[0], id: 0 });
+  });
+
+  expect(result.current.editingTransaction).toBeNull();
+  expect(result.current.message).toEqual({
+    type: "error",
+    text: "Please select a single transaction to update.",
+  });
 });
 
 test("updates a transaction with cleaned values", async () => {
@@ -181,6 +228,50 @@ test("updates a transaction with cleaned values", async () => {
   expect(result.current.message).toEqual({
     type: "success",
     text: "Income updated successfully!",
+  });
+});
+
+test("does not close the edit modal while an update is running", async () => {
+  let resolveUpdate!: (
+    response: Awaited<ReturnType<typeof updateTransaction>>,
+  ) => void;
+  mockedUpdateTransaction.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        resolveUpdate = resolve;
+      }),
+  );
+  const { result } = renderUseTransactions();
+
+  await waitFor(() => {
+    expect(result.current.transactionData).toEqual(transactions);
+  });
+
+  act(() => {
+    result.current.openEditTransaction(transactions[0]);
+  });
+
+  let editPromise: Promise<unknown> | undefined;
+  act(() => {
+    editPromise = result.current.editTransaction(1, "income", {
+      transactionName: "Updated Salary",
+      amount: 6000,
+    });
+  });
+
+  await waitFor(() => {
+    expect(result.current.updating).toBe(1);
+  });
+
+  act(() => {
+    result.current.closedEditTransaction();
+  });
+
+  expect(result.current.editingTransaction).toEqual(transactions[0]);
+
+  await act(async () => {
+    resolveUpdate({} as Awaited<ReturnType<typeof updateTransaction>>);
+    await editPromise;
   });
 });
 
@@ -226,6 +317,34 @@ test("does not update when the payload is invalid", async () => {
   });
 });
 
+test("shows an error and resets updating when update fails", async () => {
+  const updateError = new Error("Failed to update transaction");
+  mockedUpdateTransaction.mockRejectedValueOnce(updateError);
+  const { result, onClearSelection } = renderUseTransactions();
+
+  await waitFor(() => {
+    expect(result.current.transactionData).toEqual(transactions);
+  });
+
+  await act(async () => {
+    await result.current.editTransaction(1, "income", {
+      transactionName: "Updated Salary",
+      amount: 6000,
+    });
+  });
+
+  expect(result.current.updating).toBeNull();
+  expect(onClearSelection).not.toHaveBeenCalled();
+  expect(result.current.message).toEqual({
+    type: "error",
+    text: "Error updating the income transaction. Please try again later.",
+  });
+  expect(consoleErrorSpy).toHaveBeenCalledWith(
+    "There was an error updating the income transaction!",
+    updateError,
+  );
+});
+
 test("deletes a transaction, refreshes data, and clears selection", async () => {
   const onClearSelection = jest.fn();
   mockedDeleteTransaction.mockResolvedValueOnce(
@@ -267,6 +386,52 @@ test("does not delete when no transaction is provided", async () => {
     type: "error",
     text: "Please select a single transaction to delete.",
   });
+});
+
+test("does not delete a transaction with an invalid id", async () => {
+  const { result } = renderUseTransactions();
+
+  await waitFor(() => {
+    expect(result.current.transactionData).toEqual(transactions);
+  });
+
+  await act(async () => {
+    await result.current.removeTransaction({ ...transactions[1], id: 0 });
+  });
+
+  expect(mockedDeleteTransaction).not.toHaveBeenCalled();
+  expect(result.current.message).toEqual({
+    type: "error",
+    text: "Please select a single transaction to delete.",
+  });
+});
+
+test("shows an error when delete refresh fails", async () => {
+  const refreshError = new Error("Refresh failed after delete");
+  mockedDeleteTransaction.mockResolvedValueOnce(
+    {} as Awaited<ReturnType<typeof deleteTransaction>>,
+  );
+  const { result, onClearSelection } = renderUseTransactions();
+
+  await waitFor(() => {
+    expect(result.current.transactionData).toEqual(transactions);
+  });
+  mockedGetTransactions.mockRejectedValueOnce(refreshError);
+
+  await act(async () => {
+    await result.current.removeTransaction(transactions[1]);
+  });
+
+  expect(onClearSelection).not.toHaveBeenCalled();
+  expect(result.current.deleting).toBeNull();
+  expect(result.current.message).toEqual({
+    type: "error",
+    text: "Error deleting the expense transaction. Please try again later.",
+  });
+  expect(consoleErrorSpy).toHaveBeenCalledWith(
+    "There was an error deleting the expense transaction!",
+    refreshError,
+  );
 });
 
 test("shows an error message and resets deleting when delete fails", async () => {
