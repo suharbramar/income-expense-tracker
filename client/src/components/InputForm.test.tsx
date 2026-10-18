@@ -1,4 +1,10 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import {
+  createEvent,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import InputForm from "./InputForm";
 
@@ -64,6 +70,26 @@ test("submits an income transaction with trimmed name and numeric amount", async
   });
 });
 
+test("submits income when the form is submitted with the keyboard", async () => {
+  const postTransaction = jest.fn().mockResolvedValue({ success: true });
+
+  render(<InputForm postTransaction={postTransaction} />);
+
+  await userEvent.type(
+    screen.getByLabelText(/transaction name/i),
+    "Salary",
+  );
+  await userEvent.type(screen.getByLabelText(/^amount/i), "5000");
+  await userEvent.keyboard("{Enter}");
+
+  await waitFor(() => {
+    expect(postTransaction).toHaveBeenCalledWith("income", {
+      transactionName: "Salary",
+      amount: 5000,
+    });
+  });
+});
+
 test("submits an expense transaction when the expense button is clicked", async () => {
   const postTransaction = jest.fn().mockResolvedValue({ success: true });
 
@@ -71,6 +97,30 @@ test("submits an expense transaction when the expense button is clicked", async 
 
   await fillValidForm();
   await userEvent.click(screen.getByRole("button", { name: /add expense/i }));
+
+  await waitFor(() => {
+    expect(postTransaction).toHaveBeenCalledWith("expense", {
+      transactionName: "Salary",
+      amount: 5000,
+    });
+  });
+});
+
+test("uses the native submitter when the browser provides one", async () => {
+  const postTransaction = jest.fn().mockResolvedValue({ success: true });
+
+  render(<InputForm postTransaction={postTransaction} />);
+
+  await fillValidForm();
+  const expenseButton = screen.getByRole("button", { name: /add expense/i });
+  const form = expenseButton.closest("form");
+
+  expect(form).not.toBeNull();
+  const submitEvent = createEvent.submit(form as HTMLFormElement);
+  Object.defineProperty(submitEvent, "submitter", {
+    value: expenseButton,
+  });
+  fireEvent(form as HTMLFormElement, submitEvent);
 
   await waitFor(() => {
     expect(postTransaction).toHaveBeenCalledWith("expense", {
